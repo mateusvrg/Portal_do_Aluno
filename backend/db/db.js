@@ -1,7 +1,7 @@
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
 // Logger
-import Logger from "./logger";
+import Logger from "./logger.js";
 dotenv.config();
 
 const dbUser = process.env.DB_USER;

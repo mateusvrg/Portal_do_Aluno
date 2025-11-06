@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
+import db from './db/db.js'
 
 dotenv.config();
 const app = express()
