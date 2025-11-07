@@ -19,7 +19,7 @@ const User = db.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    senha: {
+    senha_hash: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },

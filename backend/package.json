@@ -13,16 +13,17 @@
   "type": "module",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "mysql2": "^3.14.0",
-    "nodemon": "^3.1.10",
-    "sequelize": "^6.37.7",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
-    "cookie-parser": "^1.4.7",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.2",
+    "mysql2": "^3.14.0",
+    "nodemon": "^3.1.10",
+    "sequelize": "^6.37.7",
     "winston": "^3.17.0"
   }
 }
