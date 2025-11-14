@@ -311,6 +311,7 @@ export default class UserController {
       res.status(500).json({ message: error });
     }
   }
+
   static async deleteUser(req, res) {
     const id = req.params.id;
     const user = await User.findOne({ where: { ID: id } });
@@ -327,5 +328,45 @@ export default class UserController {
       Logger.error(`Erro ao remover o usuário no banco: ${error}`);
       res.status(500).json({ message: error });
     }
+  }
+
+  static async createTurma(req, res) {
+    const name = req.body.name;
+    const ano = req.body.ano;
+
+    if (!name) {
+      res.status(422).json({ message: "O nome da turma é obrigatório!" });
+      return;
+    }
+
+    if (!ano) {
+      res.status(422).json({ message: "O ano letivo é obrigatório!" });
+      return;
+    }
+
+    const turmaExists = await Turma.findOne({ where: { nome_turma: name } });
+
+    if (turmaExists) {
+      res.status(422).json({
+        message: "Por favor, utilize outro nome. Este já foi cadastrado!",
+      });
+      return;
+    }
+    const turma = new Turma({
+      nome_turma: name,
+      ano_letivo: ano,
+    });
+    try {
+      const newTurma = await turma.save();
+      res.json({ message: "A turma foi cadastrada com sucesso!" });
+    } catch (error) {
+      Logger.error(`Erro ao criar turma no banco: ${error}`);
+      res.status(500).json({ message: error });
+    }
+  }
+
+  static async getTurma(req, res) {
+    const turma = await Turma.findAll({ where: { ano_letivo: 2025 } });
+    res.status(200).json({ turma });
   }
 }
