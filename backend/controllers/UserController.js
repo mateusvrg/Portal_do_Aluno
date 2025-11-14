@@ -230,7 +230,17 @@ export default class UserController {
       return;
     }
 
-    res.status(200).json({ user });
+    if (user.tipo == "aluno") {
+      const aluno = await Aluno.findOne({ where: { usuario_id: user.ID } })
+      res.status(200).json({ user, aluno });
+    }
+    else if (user.tipo == "professor") {
+      const professor = await Professor.findOne({ where: { usuario_id: user.ID } })
+      res.status(200).json({ user, professor });
+    }
+    else {
+      res.status(200).json({ user });
+    }
   }
 
   static async editUser(req, res) {

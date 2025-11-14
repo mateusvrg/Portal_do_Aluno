@@ -4,8 +4,10 @@ const createUserToken = async (user, req, res) => {
   const token = jwt.sign(
     // payload data
     {
+      id_number: user.ID,
       name: user.nome,
       id: user.email,
+      typeuser: user.tipo 
     },
     process.env.JWT_SECRET
   );
