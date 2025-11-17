@@ -41,10 +41,22 @@
   - `POST /avisos`: Cria um novo aviso.
 - **Endpoints de Administrador:**
   - Rotas de **CRUD** para gerenciar:
-    - `POST /register` (criar aluno/professor)
+    - `POST /usuarios`
+    - `GET /usuarios`
+    - `PATCH /usuarios`
+    - `DELETE /usuarios`
     - `POST /turmas`
+    - `GET /turmas`
+    - `PATCH /turmas`
+    - `DELETE /turmas`
     - `POST /disciplinas`
-    - `POST /matriculas` (matricular um aluno em uma disciplina)
+    - `GET /disciplinas`
+    - `PATCH /disciplinas`
+    - `DELETE /disciplinas`
+    - `POST /matriculas`
+    - `GET /matriculas`
+    - `PATCH /matriculas`
+    - `DELETE /matriculas`
 
 ---
 
