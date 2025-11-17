@@ -1,16 +1,16 @@
 import routerEX from "express";
-import UserController from "../controllers/UserController.js";
+import AdminController from "../controllers/AdminController.js";
 // middlewares
 import verifyToken from "../helpers/check-token.js";
 
 const router = routerEX.Router();
 
-router.post("/register", UserController.register);
-router.get("/checkuser", UserController.checkUser);
-router.get("/get-turmas", UserController.getTurma);
-router.get("/:id", UserController.getUserById);
-router.patch("/edit/:id", verifyToken, UserController.editUser);
-router.delete("/delete-user/:id", UserController.deleteUser);
-router.post("/create-turma", UserController.createTurma);
+router.post("/register", AdminController.register);
+router.get("/checkuser", AdminController.checkUser);
+router.get("/get-turmas", AdminController.getTurma);
+router.get("/:id", AdminController.getUserById);
+router.patch("/edit/:id", verifyToken, AdminController.editUser);
+router.delete("/delete-user/:id", AdminController.deleteUser);
+router.post("/create-turma", AdminController.createTurma);
 
 export default router;

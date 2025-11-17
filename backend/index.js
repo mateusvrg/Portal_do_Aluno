@@ -1,8 +1,10 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import router from "./routes/AdminRoutes.js";
-import routerLogin from "./routes/GeneralRoutes.js";
+import AdminRouter from "./routes/adminRoutes.js";
+import AuthRouter from "./routes/authRoutes.js";
+import ProfessorRouter from "./routes/professorRoutes.js";
+import StudentRouter from "./routes/studentRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -15,8 +17,9 @@ app.use(express.json());
 app.use(cors({ credentials: true, origin: `http://localhost:${port_app}` }));
 
 //Routes
-app.use("/users", router);
-app.use("/", routerLogin);
-// app.use('/diet', DietRoutes)
+app.use("/users", AdminRouter);
+app.use("/", AuthRouter);
+app.use('/student', StudentRouter)
+app.use('/professor', ProfessorRouter)
 
 app.listen(port_server);

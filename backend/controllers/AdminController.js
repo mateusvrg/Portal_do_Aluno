@@ -9,7 +9,7 @@ import jwt from "jsonwebtoken";
 import getUserByToken from "../helpers/get-user-by-token.js";
 import Turma from "../models/Turma.js";
 
-export default class UserController {
+export default class AdminController {
   static async register(req, res) {
     const name = req.body.name;
     const email = req.body.email;
@@ -181,39 +181,39 @@ export default class UserController {
     }
   }
 
-  static async login(req, res) {
-    const email = req.body.email;
-    const password = req.body.password;
+  // static async login(req, res) {
+  //   const email = req.body.email;
+  //   const password = req.body.password;
 
-    // validations
-    if (!email) {
-      res.status(422).json({ message: "O e-mail é obrigatório!" });
-      return;
-    }
+  //   // validations
+  //   if (!email) {
+  //     res.status(422).json({ message: "O e-mail é obrigatório!" });
+  //     return;
+  //   }
 
-    if (!password) {
-      res.status(422).json({ message: "A senha é obrigatória!" });
-      return;
-    }
+  //   if (!password) {
+  //     res.status(422).json({ message: "A senha é obrigatória!" });
+  //     return;
+  //   }
 
-    // check if user exists
-    const user = await User.findOne({ where: { email: email } });
+  //   // check if user exists
+  //   const user = await User.findOne({ where: { email: email } });
 
-    if (!user) {
-      return res
-        .status(422)
-        .json({ message: "Não há usuário cadastrado com este e-mail!" });
-    }
+  //   if (!user) {
+  //     return res
+  //       .status(422)
+  //       .json({ message: "Não há usuário cadastrado com este e-mail!" });
+  //   }
 
-    // check if password match
-    const checkPassword = await bcrypt.compare(password, user.senha_hash);
+  //   // check if password match
+  //   const checkPassword = await bcrypt.compare(password, user.senha_hash);
 
-    if (!checkPassword) {
-      return res.status(422).json({ message: "Senha inválida" });
-    }
+  //   if (!checkPassword) {
+  //     return res.status(422).json({ message: "Senha inválida" });
+  //   }
 
-    await createUserToken(user, req, res);
-  }
+  //   await createUserToken(user, req, res);
+  // }
 
   static async checkUser(req, res) {
     let currentUser;
