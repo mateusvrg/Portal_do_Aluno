@@ -17,6 +17,7 @@ const Turma = db.define(
     nome_turma: {
       type: DataTypes.STRING(100),
       allowNull: false,
+      unique: true,
     },
   },
   {
