@@ -3,6 +3,6 @@ import ProfessorController from "../controllers/ProfessorController.js";
 
 const router = routerEX.Router();
 
-router.post("/login", ProfessorController.register);
+router.get("/minhas-turmas", ProfessorController.getMinhaTurma);
 
 export default router;

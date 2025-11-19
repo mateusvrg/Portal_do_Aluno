@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import db from "../db/db.js";
+import ProfessoresTurmas from "./ProfessoresTurmas.js";
 
 const Turma = db.define(
   "turmas",
