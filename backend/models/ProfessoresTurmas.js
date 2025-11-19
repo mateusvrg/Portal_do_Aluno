@@ -35,4 +35,18 @@ const ProfessoresTurmas = db.define(
   }
 );
 
+//ProfessoresTurmas.belongsTo(Professores, {
+//  foreignKey: "professor_id",
+//  as: "linksProfessor",
+//});
+
+//ProfessoresTurmas.belongsTo(Turma, {
+//  foreignKey: "turma_id",
+//  //as: "linksTurma",
+//});
+
+ProfessoresTurmas.hasMany(Turma, {
+  foreignKey: "turma_id",
+});
+
 export default ProfessoresTurmas;

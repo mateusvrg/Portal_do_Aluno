@@ -40,4 +40,8 @@ User.hasMany(Professores, {
   foreignKey: "usuario_id",
 });
 
+Professores.hasMany(ProfessoresTurmas, {
+  foreignKey: "professor_id",
+});
+
 export default Professores;

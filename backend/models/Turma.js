@@ -1,4 +1,4 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, ForeignKeyConstraintError } from "sequelize";
 import db from "../db/db.js";
 import ProfessoresTurmas from "./ProfessoresTurmas.js";
 
@@ -26,5 +26,9 @@ const Turma = db.define(
     timestamps: false, // <<< DESATIVA createdAt e updatedAt
   }
 );
+
+//Turma.hasMany(ProfessoresTurmas, {
+//  foreignKey: "turma_id",
+//});
 
 export default Turma;

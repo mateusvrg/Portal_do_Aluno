@@ -36,7 +36,7 @@ export default class ProfessorController {
         include: [
           {
             model: ProfessoresTurmas,
-            as: "linksProfessores",
+            //as: "linksProfessores",
             attributes: [],
             include: [
               {
@@ -46,9 +46,9 @@ export default class ProfessorController {
             ],
           },
         ],
-        attributes: ["nome"],
+        attributes: ["ID"],
       });
-      const turmasEncontradas = minhasTurmas.linksProfessores.map((link) => ({
+      const turmasEncontradas = minhasTurmas.ProfessoresTurmas.map((link) => ({
         nome_turma: link.Turma.nome_turma,
         ano_letivo: link.Turma.ano_letivo,
       }));
