@@ -1,7 +1,6 @@
 import { DataTypes } from "sequelize";
 import db from "../db/db.js";
 import User from "./User.js";
-import ProfessoresTurmas from "./ProfessoresTurmas.js";
 
 const Professores = db.define(
   "professores",
@@ -38,10 +37,6 @@ Professores.belongsTo(User, {
 
 User.hasMany(Professores, {
   foreignKey: "usuario_id",
-});
-
-Professores.hasMany(ProfessoresTurmas, {
-  foreignKey: "professor_id",
 });
 
 export default Professores;

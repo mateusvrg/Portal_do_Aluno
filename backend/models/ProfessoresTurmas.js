@@ -10,23 +10,23 @@ const ProfessoresTurmas = db.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
-      //references: {
-      //  model: Professores,
-      //  key: "ID",
-      //},
-      //onUpdate: "CASCADE",
-      //onDelete: "CASCADE",
+      references: {
+       model: Professores,
+       key: "ID",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
     },
     turma_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
-      //references: {
-      //  model: Turma,
-      //  key: "ID",
-      //},
-      //onUpdate: "CASCADE",
-      //onDelete: "CASCADE",
+      references: {
+       model: Turma,
+       key: "ID",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
     },
   },
   {
@@ -35,17 +35,19 @@ const ProfessoresTurmas = db.define(
   }
 );
 
-//ProfessoresTurmas.belongsTo(Professores, {
-//  foreignKey: "professor_id",
-//  as: "linksProfessor",
-//});
+ProfessoresTurmas.belongsTo(Professores, {
+ foreignKey: "professor_id",
+});
 
-//ProfessoresTurmas.belongsTo(Turma, {
-//  foreignKey: "turma_id",
-//  //as: "linksTurma",
-//});
+ProfessoresTurmas.belongsTo(Turma, {
+ foreignKey: "turma_id",
+});
 
-ProfessoresTurmas.hasMany(Turma, {
+Professores.hasMany(ProfessoresTurmas, {
+  foreignKey: "professor_id",
+});
+
+Turma.hasMany(ProfessoresTurmas, {
   foreignKey: "turma_id",
 });
 

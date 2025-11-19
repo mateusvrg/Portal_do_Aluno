@@ -31,31 +31,22 @@ export default class ProfessorController {
         });
       }
 
-      const minhasTurmas = await Professor.findOne({
-        where: { ID: professor.ID },
-        include: [
-          {
-            model: ProfessoresTurmas,
-            //as: "linksProfessores",
-            attributes: [],
-            include: [
-              {
-                model: Turma,
-                attributes: ["nome_turma", "ano_letivo"],
-              },
-            ],
-          },
-        ],
-        attributes: ["ID"],
+      const minhasTurmas = await ProfessoresTurmas.findAll({
+        attributes: [],
+        where: {
+          professor_id: professor.ID // substitua pela variável apropriada
+        },
+        include: [{
+          model: Turma,
+          attributes: ["nome_turma", "ano_letivo"]   
+        }]
       });
-      const turmasEncontradas = minhasTurmas.ProfessoresTurmas.map((link) => ({
-        nome_turma: link.Turma.nome_turma,
-        ano_letivo: link.Turma.ano_letivo,
-      }));
+
       // return data
       return res.status(200).json({
-        minhasTurmas: turmasEncontradas,
+        minhasTurmas
       });
+
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Erro ao buscar turmas." });
