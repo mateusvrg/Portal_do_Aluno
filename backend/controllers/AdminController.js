@@ -442,8 +442,78 @@ export default class AdminController {
     }
   }
 
-  static async getTurma(req, res) {
-    const turma = await Turma.findAll({ where: { ano_letivo: 2025 } });
-    res.status(200).json({ turma });
+  static async selectTurma(req, res) {
+    const ano_letivo = req.body.ano
+    if (!ano_letivo) {
+      res.status(422).json({ message: "O ano letivo é obrigatório!" });
+      return;
+    }
+    try {
+      const turma = await Turma.findAll({ where: { ano_letivo: ano_letivo } });
+      res.status(200).json({ turma });
+    } catch (error) {
+      Logger.error(`Erro ao encontrar turma(s) no banco: ${error}`);
+      res.status(500).json({ message: error });
+    }
+  }
+
+  static async editTurma(req, res) {
+    const id_turma = req.body.idturma
+    const ano_letivo = req.body.ano
+    const nome_turma = req.body.nome
+
+    if (!id_turma) {
+      Logger.error(`ID turma não identificado ou vazio!`);
+      res.status(422).json({ message: "Erro ao editar turma" });
+      return;
+    }
+    if (!ano_letivo) {
+      res.status(422).json({ message: "O ano letivo é obrigatório!" });
+      return;
+    }
+    if (!nome_turma) {
+      res.status(422).json({ message: "O nome da turma é obrigatório!" });
+      return;
+    }
+
+    try {
+      const updateTurma = await Turma.update(
+        {
+          nome_turma: nome_turma,
+          ano_letivo: ano_letivo,
+        },
+        {
+          where: { ID: id_turma },
+        }
+      );
+      res.json({
+        message: "Turma atualizada com sucesso!",
+      });
+    } catch (error) {
+      Logger.error(`Erro ao atualizar turma no banco: ${error}`);
+      res.status(500).json({ message: error });
+    }
+  }
+
+  static async deleteTurma(req, res) {
+    const id = req.params.id;
+
+    // search for turma on db
+    const turma = await Turma.findOne({ where: { ID: id } });
+
+    // validation
+    if (!turma) {
+      res.status(404).json({ message: "Turma não encontrada!" });
+      return;
+    }
+
+    // delete turma
+    try {
+      await Turma.destroy({ where: { ID: id } });
+      res.status(200).json({ message: "Turma removida com sucesso!" });
+    } catch (error) {
+      Logger.error(`Erro ao remover o Turma no banco: ${error}`);
+      res.status(500).json({ message: error });
+    }
   }
 }
