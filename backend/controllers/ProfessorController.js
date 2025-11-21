@@ -142,6 +142,43 @@ export default class ProfessorController {
     }
   }
 
+  static async minhasNotas(req, res) {
+    const token = getToken(req);
+    const user = await getUserByToken(token);
+
+    if (!user) {
+      return res.status(401).json({ message: "Acesso negado!" });
+    }
+
+    const professor = await Professor.findOne({
+      where: { usuario_id: user.ID },
+    });
+
+    if (!professor) {
+      return res.status(401).json({
+        message: "Perfil de professor não encontrado para este usuário.",
+      });
+    }
+
+    const disciplinaProfessor = await Disciplina.findAll({
+      where: { professor_id: professor.ID },
+    });
+    console.log(disciplinaProfessor[0].ID);
+    try {
+      const notasLancadas = await Notas.findAll({
+        where: { disciplina_id: disciplinaProfessor[0].ID },
+      });
+      console.log(notasLancadas);
+      return res.status(200).json({
+        notasLancadas,
+      });
+    } catch (error) {
+      return res.status(401).json({
+        message: "Notas não encontradas para suas disciplinas.",
+      });
+    }
+  }
+
   static async lancarFrequencia(req, res) {
     const { aluno_id, disciplina_id, data, presente } = req.body;
 
