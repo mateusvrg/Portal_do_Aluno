@@ -16,7 +16,8 @@ import Frequencia from "../models/Frequencia.js";
 import Avisos from "../models/Avisos.js";
 
 export default class ProfessorController {
-  static async getMinhaTurma(req, res) {
+  // GET FUNCTIONS
+  static async minhasTurma(req, res) {
     try {
       const token = getToken(req);
       const user = await getUserByToken(token);
@@ -39,7 +40,7 @@ export default class ProfessorController {
       const minhasTurmas = await ProfessoresTurmas.findAll({
         attributes: [],
         where: {
-          professor_id: professor.ID, // substitua pela variável apropriada
+          professor_id: professor.ID,
         },
         include: [
           {
@@ -64,84 +65,6 @@ export default class ProfessorController {
     }
   }
 
-  static async postNotas(req, res) {
-    const { aluno_id, disciplina_id, bimestre, valor_nota } = req.body;
-
-    // validation
-    if (!aluno_id || !disciplina_id || !bimestre || valor_nota === undefined) {
-      return res
-        .status(422)
-        .json({ message: "Todos os campos são obrigatórios!" });
-    }
-
-    try {
-      const token = getToken(req);
-      const user = await getUserByToken(token);
-
-      if (!user) {
-        return res.status(401).json({ message: "Acesso negado!" });
-      }
-
-      // find professor on db
-      const professor = await Professor.findOne({
-        where: { usuario_id: user.ID },
-      });
-
-      try {
-        const disciplinaProfessor = await Disciplina.findOne({
-          where: {
-            ID: disciplina_id,
-            professor_id: professor.ID,
-          },
-        });
-
-        if (!disciplinaProfessor) {
-          return res.status(401).json({
-            message:
-              "Você não tem permissão para lançar notas nesta disciplina.",
-          });
-        }
-
-        const alunoExiste = await Aluno.findByPk(aluno_id);
-        if (!alunoExiste) {
-          return res.status(404).json({ message: "Aluno não encontrado." });
-        }
-
-        const notaExistente = await Notas.findOne({
-          where: {
-            aluno_id,
-            disciplina_id,
-            bimestre,
-          },
-        });
-
-        if (notaExistente) {
-          return res.status(422).json({
-            message:
-              "Já existe uma nota lançada para este aluno neste bimestre.",
-          });
-        }
-
-        const novaNota = await Notas.create({
-          aluno_id,
-          disciplina_id,
-          bimestre,
-          valor_nota,
-        });
-
-        return res
-          .status(201)
-          .json({ message: "Nota lançada com sucesso!", nota: novaNota });
-      } catch (error) {
-        res.status(500).json({
-          message: "Erro ao encontrar a disciplina referente ao seu cadastro.",
-        });
-      }
-    } catch (error) {
-      return res.status(500).json({ message: "Erro ao postar nota." });
-    }
-  }
-
   static async minhasNotas(req, res) {
     const token = getToken(req);
     const user = await getUserByToken(token);
@@ -163,12 +86,10 @@ export default class ProfessorController {
     const disciplinaProfessor = await Disciplina.findAll({
       where: { professor_id: professor.ID },
     });
-    console.log(disciplinaProfessor[0].ID);
     try {
       const notasLancadas = await Notas.findAll({
         where: { disciplina_id: disciplinaProfessor[0].ID },
       });
-      console.log(notasLancadas);
       return res.status(200).json({
         notasLancadas,
       });
@@ -179,6 +100,65 @@ export default class ProfessorController {
     }
   }
 
+  static async minhasFrequencias(req, res) {
+    const token = getToken(req);
+    const user = await getUserByToken(token);
+
+    if (!user) {
+      return res.status(401).json({ message: "Acesso negado!" });
+    }
+
+    const professor = await Professor.findOne({
+      where: { usuario_id: user.ID },
+    });
+
+    if (!professor) {
+      return res.status(401).json({
+        message: "Perfil de professor não encontrado para este usuário.",
+      });
+    }
+
+    const disciplinaProfessor = await Disciplina.findAll({
+      where: { professor_id: professor.ID },
+    });
+
+    try {
+      const frequenciasLancadas = await Frequencia.findAll({
+        where: { disciplina_id: disciplinaProfessor[0].ID },
+      });
+      return res.status(200).json({
+        frequenciasLancadas,
+      });
+    } catch (error) {
+      return res.status(401).json({
+        message: "Frequências não encontradas para suas disciplinas.",
+      });
+    }
+  }
+
+  static async meusAvisos(req, res) {
+    const token = getToken(req);
+    const user = await getUserByToken(token);
+
+    if (!user) {
+      return res.status(401).json({ message: "Acesso negado!" });
+    }
+
+    try {
+      const avisosLancados = await Avisos.findAll({
+        where: { autor_id: user.ID },
+      });
+      return res.status(200).json({
+        avisosLancados,
+      });
+    } catch (error) {
+      return res.status(401).json({
+        message: "Seus avisos não foram encontrados.",
+      });
+    }
+  }
+
+  // POST FUNCTIONS
   static async lancarFrequencia(req, res) {
     const { aluno_id, disciplina_id, data, presente } = req.body;
 
@@ -255,6 +235,84 @@ export default class ProfessorController {
       }
     } catch (error) {
       return res.status(500).json({ message: "Erro ao postar frequência." });
+    }
+  }
+
+  static async lancarNotas(req, res) {
+    const { aluno_id, disciplina_id, bimestre, valor_nota } = req.body;
+
+    // validation
+    if (!aluno_id || !disciplina_id || !bimestre || valor_nota === undefined) {
+      return res
+        .status(422)
+        .json({ message: "Todos os campos são obrigatórios!" });
+    }
+
+    try {
+      const token = getToken(req);
+      const user = await getUserByToken(token);
+
+      if (!user) {
+        return res.status(401).json({ message: "Acesso negado!" });
+      }
+
+      // find professor on db
+      const professor = await Professor.findOne({
+        where: { usuario_id: user.ID },
+      });
+
+      try {
+        const disciplinaProfessor = await Disciplina.findOne({
+          where: {
+            ID: disciplina_id,
+            professor_id: professor.ID,
+          },
+        });
+
+        if (!disciplinaProfessor) {
+          return res.status(401).json({
+            message:
+              "Você não tem permissão para lançar notas nesta disciplina.",
+          });
+        }
+
+        const alunoExiste = await Aluno.findByPk(aluno_id);
+        if (!alunoExiste) {
+          return res.status(404).json({ message: "Aluno não encontrado." });
+        }
+
+        const notaExistente = await Notas.findOne({
+          where: {
+            aluno_id,
+            disciplina_id,
+            bimestre,
+          },
+        });
+
+        if (notaExistente) {
+          return res.status(422).json({
+            message:
+              "Já existe uma nota lançada para este aluno neste bimestre.",
+          });
+        }
+
+        const novaNota = await Notas.create({
+          aluno_id,
+          disciplina_id,
+          bimestre,
+          valor_nota,
+        });
+
+        return res
+          .status(201)
+          .json({ message: "Nota lançada com sucesso!", nota: novaNota });
+      } catch (error) {
+        res.status(500).json({
+          message: "Erro ao encontrar a disciplina referente ao seu cadastro.",
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({ message: "Erro ao postar nota." });
     }
   }
 
