@@ -1,7 +1,6 @@
 import { DataTypes } from "sequelize";
 import db from "../db/db.js";
 import Professores from "./Professores.js";
-import Matriculas from "./Matriculas.js";
 
 const Disciplinas = db.define(
   "disciplinas",
@@ -39,10 +38,6 @@ Disciplinas.belongsTo(Professores, {
 
 Professores.hasMany(Disciplinas, {
   foreignKey: "professor_id",
-});
-
-Disciplinas.hasMany(Matriculas, {
-  foreignKey: "disciplina_id",
 });
 
 export default Disciplinas;

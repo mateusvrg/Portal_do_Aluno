@@ -22,8 +22,8 @@ const Matriculas = db.define(
       allowNull: false,
       primaryKey: true,
       references: {
-        model: Disciplinas,
-        key: "ID",
+       model: Disciplinas,
+       key: "ID",
       },
       onUpdate: "CASCADE",
       onDelete: "CASCADE",
@@ -36,10 +36,18 @@ const Matriculas = db.define(
 );
 
 Matriculas.belongsTo(Aluno, {
-  foreignKey: "aluno_id",
+ foreignKey: "aluno_id",
 });
 
 Matriculas.belongsTo(Disciplinas, {
+ foreignKey: "disciplina_id",
+});
+
+Aluno.hasMany(Matriculas, {
+  foreignKey: "aluno_id",
+});
+
+Disciplinas.hasMany(Matriculas, {
   foreignKey: "disciplina_id",
 });
 
