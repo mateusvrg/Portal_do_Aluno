@@ -362,6 +362,89 @@ export default class ProfessorController {
   }
 
   // EDIT FUNCTIONS
+  static async editNota(req, res) {
+    const { aluno_id, disciplina_id, bimestre, valor_nota } = req.body;
+
+    // validation
+    if (!aluno_id || !disciplina_id || !bimestre || valor_nota === undefined) {
+      return res
+        .status(422)
+        .json({ message: "Todos os campos são obrigatórios!" });
+    }
+
+    try {
+      const token = getToken(req);
+      const user = await getUserByToken(token);
+
+      if (!user) {
+        return res.status(401).json({ message: "Acesso negado!" });
+      }
+
+      // find professor on db
+      const professor = await Professor.findOne({
+        where: { usuario_id: user.ID },
+      });
+
+      try {
+        const disciplinaProfessor = await Disciplina.findOne({
+          where: {
+            ID: disciplina_id,
+            professor_id: professor.ID,
+          },
+        });
+
+        if (!disciplinaProfessor) {
+          return res.status(401).json({
+            message:
+              "Você não tem permissão para editar notas desta disciplina.",
+          });
+        }
+
+        const alunoExiste = await Aluno.findByPk(aluno_id);
+        if (!alunoExiste) {
+          return res.status(404).json({ message: "Aluno não encontrado." });
+        }
+
+        const notaExists = await Notas.findOne({
+          where: {
+            aluno_id,
+            disciplina_id,
+            bimestre,
+          },
+        });
+
+        ///////////////////
+        if (notaExists) {
+          const attNotas = await Notas.update(
+            {
+              aluno_id,
+              disciplina_id,
+              bimestre,
+              valor_nota,
+            },
+            {
+              where: { aluno_id, disciplina_id, bimestre }, // IMPORTANTE: Atualiza pelo id do usuário
+            }
+          );
+          return res.status(201).json({
+            message: "Nota atualizada com sucesso!",
+            notaAtt: valor_nota,
+          });
+        }
+
+        return res.status(500).json({
+          message: "Erro ao encontrar frequência.",
+        });
+      } catch (error) {
+        res.status(500).json({
+          message: "Erro ao encontrar a nota referente ao aluno.",
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({ message: "Erro ao postar nota." });
+    }
+  }
+
   static async editFrequencia(req, res) {
     const { aluno_id, disciplina_id, data, presente } = req.body;
 
