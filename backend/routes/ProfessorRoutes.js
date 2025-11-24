@@ -15,11 +15,7 @@ router.post("/edit/frequencia", ProfessorController.editFrequencia);
 router.post("/edit/nota", ProfessorController.editNota);
 router.post("/edit/aviso/:id", verifyToken, ProfessorController.editAviso);
 router.delete("/nota/:id", verifyToken, ProfessorController.deleteNota);
-router.delete(
-  "/frequencia/:id",
-  verifyToken,
-  ProfessorController.deleteFrequencia
-);
+router.delete("/frequencia/:id", verifyToken, ProfessorController.deleteFrequencia);
 router.delete("/aviso/:id", verifyToken, ProfessorController.deleteAviso);
 
 export default router;
