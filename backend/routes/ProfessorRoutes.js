@@ -1,6 +1,8 @@
 import routerEX from "express";
 import ProfessorController from "../controllers/ProfessorController.js";
 import verifyToken from "../helpers/check-token.js";
+import UploadController from "../helpers/aws-upload-s3.js";
+import MaterialController from "../helpers/aws-get-materiais-s3.js";
 
 const router = routerEX.Router();
 
@@ -15,7 +17,13 @@ router.post("/edit/frequencia", ProfessorController.editFrequencia);
 router.post("/edit/nota", ProfessorController.editNota);
 router.post("/edit/aviso/:id", verifyToken, ProfessorController.editAviso);
 router.delete("/nota/:id", verifyToken, ProfessorController.deleteNota);
-router.delete("/frequencia/:id", verifyToken, ProfessorController.deleteFrequencia);
+router.delete(
+  "/frequencia/:id",
+  verifyToken,
+  ProfessorController.deleteFrequencia
+);
 router.delete("/aviso/:id", verifyToken, ProfessorController.deleteAviso);
+router.post("/materiais", UploadController.gerarUrlUpload);
+router.post("/materiais-listar", MaterialController.gerarUrlLeitura);
 
 export default router;
