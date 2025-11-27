@@ -1,18 +1,26 @@
 import routerEX from "express";
 import ProfessorController from "../controllers/ProfessorController.js";
-import verifyToken from "../helpers/check-token.js";
+import verifyToken from "../helpers/check-token-professor.js";
 
 const router = routerEX.Router();
 
-router.get("/me/turmas", ProfessorController.minhasTurma);
-router.get("/me/notas", ProfessorController.minhasNotas);
-router.get("/me/frequencias", ProfessorController.minhasFrequencias);
-router.get("/me/avisos", ProfessorController.meusAvisos);
-router.post("/nota", ProfessorController.lancarNotas);
-router.post("/frequencia", ProfessorController.lancarFrequencia);
+router.get("/me/turmas", verifyToken, ProfessorController.minhasTurma);
+router.get("/me/notas", verifyToken, ProfessorController.minhasNotas);
+router.get(
+  "/me/frequencias",
+  verifyToken,
+  ProfessorController.minhasFrequencias
+);
+router.get("/me/avisos", verifyToken, ProfessorController.meusAvisos);
+router.post("/nota", verifyToken, ProfessorController.lancarNotas);
+router.post("/frequencia", verifyToken, ProfessorController.lancarFrequencia);
 router.post("/aviso", verifyToken, ProfessorController.lancarAviso);
-router.post("/edit/frequencia", ProfessorController.editFrequencia);
-router.post("/edit/nota", ProfessorController.editNota);
+router.post(
+  "/edit/frequencia",
+  verifyToken,
+  ProfessorController.editFrequencia
+);
+router.post("/edit/nota", verifyToken, ProfessorController.editNota);
 router.post("/edit/aviso/:id", verifyToken, ProfessorController.editAviso);
 router.delete("/nota/:id", verifyToken, ProfessorController.deleteNota);
 router.delete("/frequencia/:id", verifyToken, ProfessorController.deleteFrequencia);
