@@ -4,7 +4,8 @@ import cors from "cors";
 import AdminRouter from "./routes/AdminRoutes.js";
 import AuthRouter from "./routes/authRoutes.js";
 import ProfessorRouter from "./routes/ProfessorRoutes.js";
-import StudentRouter from "./routes/studentRoutes.js";
+import StudentRouter from "./routes/StudentRoutes.js";
+import s3Client from "./db/aws-connect.js";
 
 dotenv.config();
 const app = express();
