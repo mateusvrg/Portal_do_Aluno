@@ -1,6 +1,6 @@
 import routerEX from "express";
 import ProfessorController from "../controllers/ProfessorController.js";
-import verifyToken from "../helpers/check-token.js";
+import verifyToken from "../helpers/check-token-professor.js";
 import UploadController from "../helpers/aws-upload-s3.js";
 import MaterialController from "../helpers/aws-get-materiais-s3.js";
 
