@@ -10,7 +10,7 @@ router.get("/me/frequencias", ProfessorController.minhasFrequencias);
 router.get("/me/avisos", ProfessorController.meusAvisos);
 router.post("/nota", ProfessorController.lancarNotas);
 router.post("/frequencia", ProfessorController.lancarFrequencia);
-router.post("/aviso", verifyToken, ProfessorController.lancarAviso);
+router.post("/aviso", ProfessorController.lancarAviso);
 router.post("/edit/frequencia", ProfessorController.editFrequencia);
 router.post("/edit/nota", ProfessorController.editNota);
 router.post("/edit/aviso/:id", verifyToken, ProfessorController.editAviso);
