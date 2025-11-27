@@ -12,6 +12,7 @@ import sequelize from "../db/db.js";
 import Disciplinas from "../models/Disciplinas.js";
 import Professores from "../models/Professores.js";
 import Matriculas from "../models/Matriculas.js";
+import Horarios from "../models/Horarios.js"
 
 export default class AdminController {
   static async register(req, res) {
@@ -735,6 +736,150 @@ export default class AdminController {
       res.status(200).json({ message: "Matricula removida com sucesso!" });
     } catch (error) {
       Logger.error(`Erro ao remover o Matricula no banco: ${error}`);
+      res.status(500).json({ message: error });
+    }
+  }
+
+  static async createHorario(req, res) {
+    const disciplina_id = req.body.disciplinaid;
+    const horario_inicio = req.body.horarioinicio;
+    const horario_fim = req.body.horariofim;
+    const dia_semana = req.body.diasemana;
+
+    if (!horario_inicio) {
+      res.status(422).json({ message: "O horario de inicio precisa ser selecionado!" });
+      return;
+    }
+
+    if (!horario_fim) {
+      res.status(422).json({ message: "O horario de fim precisa ser selecionado!" });
+      return;
+    }
+
+    if (!dia_semana) {
+      res.status(422).json({ message: "O dia da semana precisa ser selecionado!" });
+      return;
+    }
+
+    if (!disciplina_id) {
+      res.status(422).json({ message: "A disciplina precisa ser selecionado!" });
+      return;
+    }
+
+    // check if disciplina exists
+    const disciplinaExists = await Disciplinas.findOne({ where: { ID: disciplina_id } });
+    if (!disciplinaExists) {
+      res.status(422).json({
+        message: "Disciplina não encontrado!",
+      });
+      return;
+    }
+
+    const horario = new Horarios({
+      disciplina_id: disciplina_id,
+      horario_inicio: horario_inicio,
+      horario_fim: horario_fim,
+      dia_semana: dia_semana,
+    });
+
+    // save matricula on db
+    try {
+      const newHorario = await horario.save();
+      res.json({ message: "O horário foi atribuido a disciplina com sucesso!" });
+    } catch (error) {
+      Logger.error(`Erro ao atribuir horario a disciplina: ${error}`);
+      res.status(500).json({ message: error });
+    }
+  }
+
+  static async selectHorarioDisciplina(req, res) {
+    const disciplina_id = req.body.disciplina_id
+    if (!disciplina_id) {
+      res.status(422).json({ message: "Disciplina não identificada!" });
+      return;
+    }
+    try {
+      const horarios_da_disciplina = await Horarios.findAll({ where: { disciplina_id: disciplina_id } });
+      res.status(200).json({ horarios_da_disciplina });
+    } catch (error) {
+      Logger.error(`Erro ao identificar horarios da disciplina no banco: ${error}`);
+      res.status(500).json({ message: error });
+    }
+  }
+
+  static async editHorarioDisciplina(req, res) {
+    const horario_id = req.body.horarioid;
+    const horario_inicio = req.body.horarioinicio;
+    const horario_fim = req.body.horariofim;
+    const dia_semana = req.body.diasemana;
+
+    if (!horario_inicio) {
+      res.status(422).json({ message: "O horario de inicio precisa ser selecionado!" });
+      return;
+    }
+
+    if (!horario_fim) {
+      res.status(422).json({ message: "O horario de fim precisa ser selecionado!" });
+      return;
+    }
+
+    if (!dia_semana) {
+      res.status(422).json({ message: "O dia da semana precisa ser selecionado!" });
+      return;
+    }
+
+    if (!horario_id) {
+      res.status(422).json({ message: "O horario precisa ser selecionado!" });
+      return;
+    }
+
+    // check if disciplina exists
+    const horarioExists = await Horarios.findOne({ where: { ID: horario_id } });
+    if (!horarioExists) {
+      res.status(422).json({
+        message: "Horario não encontrado!",
+      });
+      return;
+    }
+
+    try {
+      const updateHorario = await Horarios.update(
+        {
+          horario_inicio: horario_inicio,
+          horario_fim: horario_fim,
+          dia_semana: dia_semana,
+        },
+        {
+          where: { ID: horario_id },
+        }
+      );
+      res.json({
+        message: "Horario atualizado com sucesso!",
+      });
+    } catch (error) {
+      Logger.error(`Erro ao atualizar horario no banco: ${error}`);
+      res.status(500).json({ message: error });
+    }
+  }
+
+  static async deleteHorario(req, res) {
+    const id_horario = req.params.id;
+
+    // search for horario on db
+    const horario = await Horarios.findOne({ where: { ID: id_horario } });
+
+    // validation
+    if (!horario) {
+      res.status(404).json({ message: "Horario da disciplina não encontrado!" });
+      return;
+    }
+
+    // delete horario
+    try {
+      await Horarios.destroy({ where: { ID: id_horario } });
+      res.status(200).json({ message: "Horario removido com sucesso!" });
+    } catch (error) {
+      Logger.error(`Erro ao remover o Horario no banco: ${error}`);
       res.status(500).json({ message: error });
     }
   }
