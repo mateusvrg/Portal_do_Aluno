@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import Logger from "../db/logger.js";
 
 // middleware to validate token
@@ -13,7 +13,7 @@ const checkToken = (req, res, next) => {
     req.user = verified;
     next(); // to continue the flow
   } catch (err) {
-    Logger.error(`O Token é inválido: ${err}`)
+    Logger.error(`O Token é inválido: ${err}`);
     res.status(400).json({ message: "O Token é inválido!" });
   }
 };

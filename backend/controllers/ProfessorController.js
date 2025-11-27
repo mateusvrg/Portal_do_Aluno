@@ -1,7 +1,7 @@
-import User from "../models/User.js";
+//import User from "../models/User.js";
 import Professor from "../models/Professores.js";
 // import Aluno from "../models/Aluno.js";
-import bcrypt from "bcryptjs";
+//import bcrypt from "bcryptjs";
 // import Logger from "../db/logger.js";
 // import createUserToken from "../helpers/create-user-token.js";
 import getToken from "../helpers/get-token.js";
@@ -15,27 +15,12 @@ import Notas from "../models/Notas.js";
 import Frequencia from "../models/Frequencia.js";
 import Avisos from "../models/Avisos.js";
 import { Op } from "sequelize";
+import Logger from "../db/logger.js";
 
 export default class ProfessorController {
   // LIST FUNCTIONS
   static async minhasTurma(req, res) {
-    const token = getToken(req);
-    const user = await getUserByToken(token);
-
-    if (!user) {
-      return res.status(401).json({ message: "Acesso negado!" });
-    }
-
-    // find professor on db
-    const professor = await Professor.findOne({
-      where: { usuario_id: user.ID },
-    });
-
-    if (!professor) {
-      return res.status(403).json({
-        message: "Perfil de professor não encontrado para este usuário.",
-      });
-    }
+    const professor = req.professor;
 
     try {
       const minhasTurmas = await ProfessoresTurmas.findAll({
@@ -52,9 +37,16 @@ export default class ProfessorController {
       });
 
       const turmasEncontradas = minhasTurmas.map((link) => ({
-        nome_turma: link.turma?.nome_turma || "Turma não encontrada",
-        ano_letivo: link.turma?.ano_letivo || "N/A",
+        nome_turma: link.turma.nome_turma,
+        ano_letivo: link.turma.ano_letivo,
       }));
+
+      if (turmasEncontradas.length == 0) {
+        return res.status(200).json({
+          nome_turma: "Turma não encontrada",
+          ano_letivo: "N/A",
+        });
+      }
 
       // return data
       return res.status(200).json({
@@ -63,28 +55,13 @@ export default class ProfessorController {
     } catch (error) {
       Logger.error(`Erro ao buscar turma-professor no banco: ${error}`);
       return res.status(500).json({
-        message: "Suas turmas não foram encontradas.",
+        message: "Erro interno ao buscar turmas no banco.",
       });
     }
   }
 
   static async minhasNotas(req, res) {
-    const token = getToken(req);
-    const user = await getUserByToken(token);
-
-    if (!user) {
-      return res.status(401).json({ message: "Acesso negado!" });
-    }
-
-    const professor = await Professor.findOne({
-      where: { usuario_id: user.ID },
-    });
-
-    if (!professor) {
-      return res.status(403).json({
-        message: "Perfil de professor não encontrado para este usuário.",
-      });
-    }
+    const professor = req.professor;
 
     try {
       const disciplinaProfessor = await Disciplina.findAll({
@@ -114,23 +91,7 @@ export default class ProfessorController {
   }
 
   static async minhasFrequencias(req, res) {
-    const token = getToken(req);
-    const user = await getUserByToken(token);
-
-    if (!user) {
-      return res.status(401).json({ message: "Acesso negado!" });
-    }
-
-    const professor = await Professor.findOne({
-      where: { usuario_id: user.ID },
-    });
-
-    if (!professor) {
-      return res.status(403).json({
-        message:
-          "Acesso negado. Perfil de professor não encontrado para este usuário.",
-      });
-    }
+    const professor = req.professor;
 
     try {
       const disciplinaProfessor = await Disciplina.findAll({
@@ -161,18 +122,7 @@ export default class ProfessorController {
   }
 
   static async meusAvisos(req, res) {
-    const token = getToken(req);
-    const user = await getUserByToken(token);
-
-    if (!user) {
-      return res.status(401).json({ message: "Acesso negado." });
-    }
-
-    const professor = await Professor.findOne({ where: { usuario_id: id } });
-
-    if (!professor) {
-      return res.status(401).json({ message: "Acesso negado!" });
-    }
+    const user = req.user;
 
     try {
       const avisosLancados = await Avisos.findAll({
@@ -200,21 +150,7 @@ export default class ProfessorController {
         .json({ message: "Todos os campos são obrigatórios." });
     }
 
-    const token = getToken(req);
-    const user = await getUserByToken(token);
-
-    if (!user) {
-      return res.status(401).json({ message: "Acesso negado." });
-    }
-
-    // find professor on db
-    const professor = await Professor.findOne({
-      where: { usuario_id: user.ID },
-    });
-
-    if (!professor) {
-      return res.status(403).json({ message: "Acesso negado." });
-    }
+    const professor = req.professor;
 
     const disciplinaProfessor = await Disciplina.findOne({
       where: {
@@ -277,23 +213,7 @@ export default class ProfessorController {
         .json({ message: "Todos os campos são obrigatórios!" });
     }
 
-    const token = getToken(req);
-    const user = await getUserByToken(token);
-
-    if (!user) {
-      return res.status(401).json({ message: "Acesso negado!" });
-    }
-
-    // find professor on db
-    const professor = await Professor.findOne({
-      where: { usuario_id: user.ID },
-    });
-
-    if (!professor) {
-      return res
-        .status(403)
-        .json({ message: "Acesso negado. Professor não encontrado" });
-    }
+    const professor = req.professor;
 
     const disciplinaProfessor = await Disciplina.findOne({
       where: {
@@ -353,23 +273,7 @@ export default class ProfessorController {
         .json({ message: "Todos os campos são obrigatórios!" });
     }
 
-    const token = getToken(req);
-    const user = await getUserByToken(token);
-
-    // validation
-    if (!user) {
-      res.status(401).json({ message: "Usuário não encontrado!" });
-      return;
-    }
-
-    const autor = await Professor.findOne({
-      where: { usuario_id: user.ID },
-    });
-
-    if (!autor) {
-      res.status(403).json({ message: "Professor não encontrado!" });
-      return;
-    }
+    const user = req.user;
 
     try {
       const novoAviso = await Avisos.create({
@@ -400,23 +304,8 @@ export default class ProfessorController {
         .json({ message: "Todos os campos são obrigatórios." });
     }
 
-    const token = getToken(req);
-    const user = await getUserByToken(token);
+    const professor = req.professor;
 
-    if (!user) {
-      return res.status(401).json({ message: "Acesso negado." });
-    }
-
-    // find professor on db
-    const professor = await Professor.findOne({
-      where: { usuario_id: user.ID },
-    });
-
-    if (!professor) {
-      return res.status(403).json({
-        message: "Acesso negado. Perfil de professor não encontrado.",
-      });
-    }
     const disciplinaProfessor = await Disciplina.findOne({
       where: {
         ID: disciplina_id,
@@ -483,22 +372,7 @@ export default class ProfessorController {
         .json({ message: "Todos os campos são obrigatórios." });
     }
 
-    const token = getToken(req);
-    const user = await getUserByToken(token);
-
-    if (!user) {
-      return res.status(401).json({ message: "Acesso negado." });
-    }
-
-    const professor = await Professor.findOne({
-      where: { usuario_id: user.ID },
-    });
-
-    if (!professor) {
-      return res.status(403).json({
-        message: "Acesso negado. Perfil de professor não encontrado.",
-      });
-    }
+    const professor = req.professor;
 
     const disciplinaProfessor = await Disciplina.findOne({
       where: {
@@ -565,23 +439,7 @@ export default class ProfessorController {
         .json({ message: "Todos os campos são obrigatórios!" });
     }
 
-    const token = getToken(req);
-    const autor = await getUserByToken(token);
-
-    if (!autor) {
-      res.status(401).json({ message: "Usuário não encontrado!" });
-      return;
-    }
-
-    const professor = await Professor.findOne({
-      where: { usuario_id: autor.ID },
-    });
-
-    // validation
-    if (!professor) {
-      res.status(403).json({ message: "Professor não encontrado!" });
-      return;
-    }
+    const user = req.user;
 
     const avisoExists = await Avisos.findOne({
       where: { ID: id },
@@ -591,7 +449,7 @@ export default class ProfessorController {
       return res.status(422).json({ message: "Aviso não encontrado." });
     }
 
-    if (avisoExists.autor_id !== autor.ID) {
+    if (avisoExists.autor_id !== user.ID) {
       return res
         .status(403)
         .json({ message: "Você não tem permissão para editar este aviso." });
@@ -621,23 +479,7 @@ export default class ProfessorController {
   // DELETE FUNCTIONS
   static async deleteNota(req, res) {
     const id = req.params.id;
-
-    const token = getToken(req);
-    const user = await getUserByToken(token);
-
-    if (!user) {
-      return res.status(401).json({ message: "Acesso negado." });
-    }
-
-    const professor = await Professor.findOne({
-      where: { usuario_id: user.ID },
-    });
-
-    // validation
-    if (!professor) {
-      res.status(403).json({ message: "Professor não encontrado!" });
-      return;
-    }
+    const professor = req.professor;
 
     const notaExistente = await Notas.findOne({
       where: {
@@ -677,23 +519,7 @@ export default class ProfessorController {
 
   static async deleteFrequencia(req, res) {
     const id = req.params.id;
-
-    const token = getToken(req);
-    const user = await getUserByToken(token);
-
-    if (!user) {
-      return res.status(401).json({ message: "Acesso negado." });
-    }
-
-    const professor = await Professor.findOne({
-      where: { usuario_id: user.ID },
-    });
-
-    // validation
-    if (!professor) {
-      res.status(403).json({ message: "Professor não encontrado." });
-      return;
-    }
+    const professor = req.professor;
 
     const frequenciaExistente = await Frequencia.findOne({
       where: {
@@ -734,28 +560,12 @@ export default class ProfessorController {
 
   static async deleteAviso(req, res) {
     const id = req.params.id;
-
-    const token = getToken(req);
-    const autor = await getUserByToken(token);
-
-    if (!autor) {
-      return res.status(401).json({ message: "Acesso negado." });
-    }
-
-    const professor = await Professor.findOne({
-      where: { usuario_id: autor.ID },
-    });
-
-    // validation
-    if (!professor) {
-      res.status(403).json({ message: "Professor não encontrado." });
-      return;
-    }
+    const user = req.user;
 
     const avisoExistente = await Avisos.findOne({
       where: {
         ID: id,
-        autor_id: autor.ID,
+        autor_id: user.ID,
       },
     });
 
