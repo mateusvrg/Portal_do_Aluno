@@ -7,46 +7,12 @@ import Frequencia from "../models/Frequencia.js";
 import Avisos from "../models/Avisos.js";
 
 export default class StudentController {
-  //static async minhasNotas(req, res) {
-  //  const token = getToken(req);
-  //  const user = await getUserByToken(token);
-
-  //  if (!user) {
-  //    return res.status(401).json({ message: "Acesso negado." });
-  //  }
-
-  //  const aluno = await Aluno.findOne({ where: { usuario_id: user.ID } });
-
-  //  if (!aluno) {
-  //   return res.status(404).json({ message: "Aluno não encontrado." });
-  //  }
-
-  //  try {
-  //    const notasExists = await Notas.findAll({
-  //      where: { aluno_id: aluno.ID },
-  //    });
-
-  //    if (notasExists.length === 0) {
-  //      return res.status(404).json({
-  //        message: "Notas não encontradas.",
-  //      });
-  //    }
-
-  //    return res.status(200).json({
-  //      notas: notasExists,
-  //    });
-  //  } catch (error) {
-  //    Logger.error(`Erro encontrar notas. ${error}`);
-  //    res.status(500).json({ message: error });
-  //  }
-  //}
-
   static async minhasNotas(req, res) {
-    const id = req.params.id;
+    const aluno = req.aluno;
 
     try {
       const notasExists = await Notas.findAll({
-        where: { aluno_id: id },
+        where: { aluno_id: aluno.ID },
       });
 
       if (notasExists.length === 0) {
@@ -65,11 +31,11 @@ export default class StudentController {
   }
 
   static async minhasFrequencias(req, res) {
-    const id = req.params.id;
+    const aluno = req.aluno;
 
     try {
       const frequenciaExists = await Frequencia.findAll({
-        where: { aluno_id: id },
+        where: { aluno_id: aluno.ID },
       });
 
       if (frequenciaExists.length === 0) {
@@ -88,12 +54,13 @@ export default class StudentController {
   }
 
   static async listAvisos(req, res) {
+    req.user;
     try {
       const avisosExists = await Avisos.findAll();
 
       if (avisosExists.length === 0) {
         return res.status(404).json({
-          message: "Avisis não encontrados.",
+          message: "Avisos não encontrados.",
         });
       }
 
