@@ -6,13 +6,12 @@ import Logger from "../db/logger.js";
 import createUserToken from "../helpers/create-user-token.js";
 import getToken from "../helpers/get-token.js";
 import jwt from "jsonwebtoken";
-import getUserByToken from "../helpers/get-user-by-token.js";
 import Turma from "../models/Turma.js";
 import sequelize from "../db/db.js";
 import Disciplinas from "../models/Disciplinas.js";
 import Professores from "../models/Professores.js";
 import Matriculas from "../models/Matriculas.js";
-import Horarios from "../models/Horarios.js"
+import Horarios from "../models/Horarios.js";
 
 export default class AdminController {
   static async register(req, res) {
@@ -272,8 +271,8 @@ export default class AdminController {
 
     if (tipo == "aluno") {
       const t = await sequelize.transaction();
-      const matricula = req.body.matricula
-      const turma_id = req.body.turmaid
+      const matricula = req.body.matricula;
+      const turma_id = req.body.turmaid;
       // validations
       if (!matricula) {
         res.status(422).json({ message: "A matricula é obrigatória!" });
@@ -324,12 +323,9 @@ export default class AdminController {
         Logger.error(`Erro ao atualizar user no banco: ${error}`);
         res.status(500).json({ message: error });
       }
-
-
-
     } else if (tipo == "professor") {
       const t = await sequelize.transaction();
-      const departamento = req.body.departamento
+      const departamento = req.body.departamento;
       // validation
       if (!departamento) {
         res.status(422).json({ message: "O departamento é obrigatório!" });
@@ -447,7 +443,7 @@ export default class AdminController {
   }
 
   static async selectTurma(req, res) {
-    const ano_letivo = req.body.ano
+    const ano_letivo = req.body.ano;
     if (!ano_letivo) {
       res.status(422).json({ message: "O ano letivo é obrigatório!" });
       return;
@@ -462,9 +458,9 @@ export default class AdminController {
   }
 
   static async editTurma(req, res) {
-    const id_turma = req.body.idturma
-    const ano_letivo = req.body.ano
-    const nome_turma = req.body.nome
+    const id_turma = req.body.idturma;
+    const ano_letivo = req.body.ano;
+    const nome_turma = req.body.nome;
 
     if (!id_turma) {
       Logger.error(`ID turma não identificado ou vazio!`);
@@ -538,7 +534,9 @@ export default class AdminController {
     }
 
     // check if turma exists
-    const professorExists = await Professores.findOne({ where: { ID: professor_id } });
+    const professorExists = await Professores.findOne({
+      where: { ID: professor_id },
+    });
     if (!professorExists) {
       res.status(422).json({
         message: "Professor não encontrado!",
@@ -562,13 +560,15 @@ export default class AdminController {
   }
 
   static async selectDisciplina(req, res) {
-    const professor_id = req.body.professor_id
+    const professor_id = req.body.professor_id;
     if (!professor_id) {
       res.status(422).json({ message: "Professor não identificado!" });
       return;
     }
     try {
-      const disciplina = await Disciplinas.findAll({ where: { professor_id: professor_id } });
+      const disciplina = await Disciplinas.findAll({
+        where: { professor_id: professor_id },
+      });
       res.status(200).json({ disciplina });
     } catch (error) {
       Logger.error(`Erro ao encontrar disciplina(s) no banco: ${error}`);
@@ -645,12 +645,16 @@ export default class AdminController {
 
     // validations
     if (!aluno_id) {
-      res.status(422).json({ message: "O aluno a ser matriculado é obrigatório!" });
+      res
+        .status(422)
+        .json({ message: "O aluno a ser matriculado é obrigatório!" });
       return;
     }
 
     if (!disciplina_id) {
-      res.status(422).json({ message: "A disciplina precisa ser selecionado!" });
+      res
+        .status(422)
+        .json({ message: "A disciplina precisa ser selecionado!" });
       return;
     }
 
@@ -664,7 +668,9 @@ export default class AdminController {
     }
 
     // check if disciplina exists
-    const disciplinaExists = await Disciplinas.findOne({ where: { ID: disciplina_id } });
+    const disciplinaExists = await Disciplinas.findOne({
+      where: { ID: disciplina_id },
+    });
     if (!disciplinaExists) {
       res.status(422).json({
         message: "Disciplina não encontrado!",
@@ -682,19 +688,23 @@ export default class AdminController {
       const newMatricula = await matricula.save();
       res.json({ message: "A matricula foi realizada com sucesso!" });
     } catch (error) {
-      Logger.error(`Erro ao matricular aluno da disciplina, Ou matricula já realizada: ${error}`);
+      Logger.error(
+        `Erro ao matricular aluno da disciplina, Ou matricula já realizada: ${error}`
+      );
       res.status(500).json({ message: error });
     }
   }
 
   static async selectMatriculaDisciplina(req, res) {
-    const disciplina_id = req.body.disciplina_id
+    const disciplina_id = req.body.disciplina_id;
     if (!disciplina_id) {
       res.status(422).json({ message: "Matricula não identificada!" });
       return;
     }
     try {
-      const alunos_da_disciplina = await Matriculas.findAll({ where: { disciplina_id: disciplina_id } });
+      const alunos_da_disciplina = await Matriculas.findAll({
+        where: { disciplina_id: disciplina_id },
+      });
       res.status(200).json({ alunos_da_disciplina });
     } catch (error) {
       Logger.error(`Erro ao encontrar alunos matriculados no banco: ${error}`);
@@ -703,16 +713,20 @@ export default class AdminController {
   }
 
   static async selectMatriculaAluno(req, res) {
-    const aluno_id = req.body.aluno_id
+    const aluno_id = req.body.aluno_id;
     if (!aluno_id) {
       res.status(422).json({ message: "Aluno não identificado!" });
       return;
     }
     try {
-      const disciplinas_do_aluno = await Matriculas.findAll({ where: { aluno_id: aluno_id } });
+      const disciplinas_do_aluno = await Matriculas.findAll({
+        where: { aluno_id: aluno_id },
+      });
       res.status(200).json({ disciplinas_do_aluno });
     } catch (error) {
-      Logger.error(`Erro ao encontrar disciplina(s) do aluno no banco: ${error}`);
+      Logger.error(
+        `Erro ao encontrar disciplina(s) do aluno no banco: ${error}`
+      );
       res.status(500).json({ message: error });
     }
   }
@@ -722,7 +736,9 @@ export default class AdminController {
     const id_disciplina = req.params.iddisciplina;
 
     // search for matricula on db
-    const matricula = await Matriculas.findOne({ where: { aluno_id: id_aluno, disciplina_id: id_disciplina } });
+    const matricula = await Matriculas.findOne({
+      where: { aluno_id: id_aluno, disciplina_id: id_disciplina },
+    });
 
     // validation
     if (!matricula) {
@@ -732,7 +748,9 @@ export default class AdminController {
 
     // delete matricula
     try {
-      await Matriculas.destroy({ where: { aluno_id: id_aluno, disciplina_id: id_disciplina } });
+      await Matriculas.destroy({
+        where: { aluno_id: id_aluno, disciplina_id: id_disciplina },
+      });
       res.status(200).json({ message: "Matricula removida com sucesso!" });
     } catch (error) {
       Logger.error(`Erro ao remover o Matricula no banco: ${error}`);
@@ -747,27 +765,37 @@ export default class AdminController {
     const dia_semana = req.body.diasemana;
 
     if (!horario_inicio) {
-      res.status(422).json({ message: "O horario de inicio precisa ser selecionado!" });
+      res
+        .status(422)
+        .json({ message: "O horario de inicio precisa ser selecionado!" });
       return;
     }
 
     if (!horario_fim) {
-      res.status(422).json({ message: "O horario de fim precisa ser selecionado!" });
+      res
+        .status(422)
+        .json({ message: "O horario de fim precisa ser selecionado!" });
       return;
     }
 
     if (!dia_semana) {
-      res.status(422).json({ message: "O dia da semana precisa ser selecionado!" });
+      res
+        .status(422)
+        .json({ message: "O dia da semana precisa ser selecionado!" });
       return;
     }
 
     if (!disciplina_id) {
-      res.status(422).json({ message: "A disciplina precisa ser selecionado!" });
+      res
+        .status(422)
+        .json({ message: "A disciplina precisa ser selecionado!" });
       return;
     }
 
     // check if disciplina exists
-    const disciplinaExists = await Disciplinas.findOne({ where: { ID: disciplina_id } });
+    const disciplinaExists = await Disciplinas.findOne({
+      where: { ID: disciplina_id },
+    });
     if (!disciplinaExists) {
       res.status(422).json({
         message: "Disciplina não encontrado!",
@@ -785,7 +813,9 @@ export default class AdminController {
     // save matricula on db
     try {
       const newHorario = await horario.save();
-      res.json({ message: "O horário foi atribuido a disciplina com sucesso!" });
+      res.json({
+        message: "O horário foi atribuido a disciplina com sucesso!",
+      });
     } catch (error) {
       Logger.error(`Erro ao atribuir horario a disciplina: ${error}`);
       res.status(500).json({ message: error });
@@ -793,16 +823,20 @@ export default class AdminController {
   }
 
   static async selectHorarioDisciplina(req, res) {
-    const disciplina_id = req.body.disciplina_id
+    const disciplina_id = req.body.disciplina_id;
     if (!disciplina_id) {
       res.status(422).json({ message: "Disciplina não identificada!" });
       return;
     }
     try {
-      const horarios_da_disciplina = await Horarios.findAll({ where: { disciplina_id: disciplina_id } });
+      const horarios_da_disciplina = await Horarios.findAll({
+        where: { disciplina_id: disciplina_id },
+      });
       res.status(200).json({ horarios_da_disciplina });
     } catch (error) {
-      Logger.error(`Erro ao identificar horarios da disciplina no banco: ${error}`);
+      Logger.error(
+        `Erro ao identificar horarios da disciplina no banco: ${error}`
+      );
       res.status(500).json({ message: error });
     }
   }
@@ -814,17 +848,23 @@ export default class AdminController {
     const dia_semana = req.body.diasemana;
 
     if (!horario_inicio) {
-      res.status(422).json({ message: "O horario de inicio precisa ser selecionado!" });
+      res
+        .status(422)
+        .json({ message: "O horario de inicio precisa ser selecionado!" });
       return;
     }
 
     if (!horario_fim) {
-      res.status(422).json({ message: "O horario de fim precisa ser selecionado!" });
+      res
+        .status(422)
+        .json({ message: "O horario de fim precisa ser selecionado!" });
       return;
     }
 
     if (!dia_semana) {
-      res.status(422).json({ message: "O dia da semana precisa ser selecionado!" });
+      res
+        .status(422)
+        .json({ message: "O dia da semana precisa ser selecionado!" });
       return;
     }
 
@@ -870,7 +910,9 @@ export default class AdminController {
 
     // validation
     if (!horario) {
-      res.status(404).json({ message: "Horario da disciplina não encontrado!" });
+      res
+        .status(404)
+        .json({ message: "Horario da disciplina não encontrado!" });
       return;
     }
 
