@@ -14,7 +14,10 @@ router.delete("/delete-user/:id", verifyTokenAdmin, AdminController.deleteUser);
 router.delete("/delete-turma/:id", verifyTokenAdmin, AdminController.deleteTurma);
 router.delete("/delete-disciplina/:id", verifyTokenAdmin, AdminController.deleteDisciplina);
 router.delete("/delete-horario/:id", verifyTokenAdmin, AdminController.deleteHorario);
+router.delete("/delete-aviso/:id", verifyTokenAdmin, AdminController.deleteAviso);
+router.post("/edit-aviso/:id", verifyTokenAdmin, AdminController.editAviso);
 router.delete("/delete-matricula/:idaluno/:iddisciplina", verifyTokenAdmin, AdminController.deleteMatricula);
+router.post("/create-aviso", verifyTokenAdmin, AdminController.lancarAviso);
 router.post("/create-turma", verifyTokenAdmin, AdminController.createTurma);
 router.post("/edit-turma", verifyTokenAdmin, AdminController.editTurma);
 router.post("/create-disciplina", verifyTokenAdmin, AdminController.createDisciplina);
@@ -26,5 +29,6 @@ router.post("/select-matricula-aluno", verifyTokenAdmin, AdminController.selectM
 router.post("/create-horario", verifyTokenAdmin, AdminController.createHorario);
 router.post("/select-horario-disciplina", verifyTokenAdmin, AdminController.selectHorarioDisciplina);
 router.post("/edit-horario-disciplina", verifyTokenAdmin, AdminController.editHorarioDisciplina);
+router.get("/me/avisos", verifyTokenAdmin, AdminController.meusAvisos);
 
 export default router;

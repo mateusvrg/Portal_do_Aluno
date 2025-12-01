@@ -4,7 +4,6 @@ import Disciplina from "../models/Disciplinas.js";
 import Aluno from "../models/Aluno.js";
 import Notas from "../models/Notas.js";
 import Frequencia from "../models/Frequencia.js";
-import Avisos from "../models/Avisos.js";
 import { Op } from "sequelize";
 import Logger from "../db/logger.js";
 
@@ -108,24 +107,6 @@ export default class ProfessorController {
       Logger.error(`Erro ao buscar frequência no banco: ${error}`);
       return res.status(500).json({
         message: "Erro interno ao buscar frequências no banco.",
-      });
-    }
-  }
-
-  static async meusAvisos(req, res) {
-    const user = req.user;
-
-    try {
-      const avisosLancados = await Avisos.findAll({
-        where: { autor_id: user.ID },
-      });
-      return res.status(200).json({
-        avisosLancados,
-      });
-    } catch (error) {
-      Logger.error(`Erro ao buscar aviso no banco: ${error}`);
-      return res.status(500).json({
-        message: "Erro ao buscar seus avisos.",
       });
     }
   }
@@ -252,35 +233,6 @@ export default class ProfessorController {
     } catch (error) {
       Logger.error(`Erro ao postar notas no banco: ${error}`);
       return res.status(500).json({ message: "Erro ao postar nota." });
-    }
-  }
-
-  static async lancarAviso(req, res) {
-    const { titulo, conteudo, data_postagem } = req.body;
-
-    if (!titulo || !conteudo || !data_postagem) {
-      return res
-        .status(422)
-        .json({ message: "Todos os campos são obrigatórios!" });
-    }
-
-    const user = req.user;
-
-    try {
-      const novoAviso = await Avisos.create({
-        autor_id: user.ID,
-        titulo,
-        conteudo,
-        data_postagem,
-      });
-
-      return res.status(201).json({
-        message: "Aviso lançado com sucesso!",
-        aviso: novoAviso,
-      });
-    } catch (error) {
-      Logger.error(`Erro ao postar aviso no banco: ${error}`);
-      return res.status(500).json({ message: "Erro ao postar aviso." });
     }
   }
 
@@ -420,53 +372,6 @@ export default class ProfessorController {
     }
   }
 
-  static async editAviso(req, res) {
-    const id = req.params.id;
-    const { titulo, conteudo, data_postagem } = req.body;
-
-    if (!titulo || !conteudo || !data_postagem) {
-      return res
-        .status(422)
-        .json({ message: "Todos os campos são obrigatórios!" });
-    }
-
-    const user = req.user;
-
-    const avisoExists = await Avisos.findOne({
-      where: { ID: id },
-    });
-
-    if (!avisoExists) {
-      return res.status(422).json({ message: "Aviso não encontrado." });
-    }
-
-    if (avisoExists.autor_id !== user.ID) {
-      return res
-        .status(403)
-        .json({ message: "Você não tem permissão para editar este aviso." });
-    }
-
-    try {
-      await Avisos.update(
-        {
-          titulo,
-          conteudo,
-          data_postagem,
-        },
-        {
-          where: { ID: id },
-        }
-      );
-
-      return res
-        .status(200)
-        .json({ message: "Dados atualizados com sucesso." });
-    } catch (error) {
-      Logger.error(`Erro ao editar aviso no banco: ${error}`);
-      return res.status(500).json({ message: "Erro ao editar aviso." });
-    }
-  }
-
   // DELETE FUNCTIONS
   static async deleteNota(req, res) {
     const id = req.params.id;
@@ -546,34 +451,6 @@ export default class ProfessorController {
       res
         .status(500)
         .json({ message: "Erro interno ao tentar remover a frequência." });
-    }
-  }
-
-  static async deleteAviso(req, res) {
-    const id = req.params.id;
-    const user = req.user;
-
-    const avisoExistente = await Avisos.findOne({
-      where: {
-        ID: id,
-        autor_id: user.ID,
-      },
-    });
-
-    if (!avisoExistente) {
-      return res.status(404).json({
-        message: "Aviso não existente.",
-      });
-    }
-
-    try {
-      await avisoExistente.destroy();
-      res.status(200).json({ message: "Aviso removido com sucesso." });
-    } catch (error) {
-      Logger.error(`Erro ao remover o aviso no banco: ${error}`);
-      res
-        .status(500)
-        .json({ message: "Erro interno ao tentar remover o aviso." });
     }
   }
 }
