@@ -4,6 +4,7 @@ import Frequencia from "../models/Frequencia.js";
 import Avisos from "../models/Avisos.js";
 import Matriculas from "../models/Matriculas.js";
 import Horarios from "../models/Horarios.js";
+import Disciplinas from "../models/Disciplinas.js";
 import { Op } from "sequelize";
 
 export default class StudentController {
@@ -36,16 +37,22 @@ export default class StudentController {
     try {
       const frequenciaExists = await Frequencia.findAll({
         where: { aluno_id: aluno.ID },
+        include: [
+          {
+            model: Disciplinas,
+            attributes: ['nome_disciplina']
+          }
+        ]
       });
 
       if (frequenciaExists.length === 0) {
         return res.status(404).json({
-          message: "Frequência não encontradas.",
+          message: "Frequência(s) não encontradas.",
         });
       }
 
       return res.status(200).json({
-        notas: frequenciaExists,
+        frequenciaExists,
       });
     } catch (error) {
       Logger.error(`Erro encontrar frequência. ${error}`);

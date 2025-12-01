@@ -12,6 +12,7 @@ import Disciplinas from "../models/Disciplinas.js";
 import Professores from "../models/Professores.js";
 import Matriculas from "../models/Matriculas.js";
 import Horarios from "../models/Horarios.js";
+import Avisos from "../models/Avisos.js";
 
 export default class AdminController {
   static async register(req, res) {
@@ -923,6 +924,128 @@ export default class AdminController {
     } catch (error) {
       Logger.error(`Erro ao remover o Horario no banco: ${error}`);
       res.status(500).json({ message: error });
+    }
+  }
+
+  static async meusAvisos(req, res) {
+    const user = req.user;
+
+    try {
+      const avisosLancados = await Avisos.findAll({
+        where: { autor_id: user.id_number },
+      });
+      return res.status(200).json({
+        avisosLancados,
+      });
+    } catch (error) {
+      Logger.error(`Erro ao buscar aviso no banco: ${error}`);
+      return res.status(500).json({
+        message: "Erro ao buscar seus avisos.",
+      });
+    }
+  }
+
+  static async lancarAviso(req, res) {
+    const { titulo, conteudo, data_postagem } = req.body;
+
+    if (!titulo || !conteudo || !data_postagem) {
+      return res
+        .status(422)
+        .json({ message: "Todos os campos são obrigatórios!" });
+    }
+
+    const user = req.user;
+
+    try {
+      const novoAviso = await Avisos.create({
+        autor_id: user.id_number,
+        titulo,
+        conteudo,
+        data_postagem,
+      });
+
+      return res.status(201).json({
+        message: "Aviso lançado com sucesso!",
+        aviso: novoAviso,
+      });
+    } catch (error) {
+      Logger.error(`Erro ao postar aviso no banco: ${error}`);
+      return res.status(500).json({ message: "Erro ao postar aviso." });
+    }
+  }
+
+  static async editAviso(req, res) {
+    const id = req.params.id;
+    const { titulo, conteudo, data_postagem } = req.body;
+
+    if (!titulo || !conteudo || !data_postagem) {
+      return res
+        .status(422)
+        .json({ message: "Todos os campos são obrigatórios!" });
+    }
+
+    const user = req.user;
+
+    const avisoExists = await Avisos.findOne({
+      where: { ID: id },
+    });
+
+    if (!avisoExists) {
+      return res.status(422).json({ message: "Aviso não encontrado." });
+    }
+
+    if (avisoExists.autor_id !== user.id_number) {
+      return res
+        .status(403)
+        .json({ message: "Você não tem permissão para editar este aviso." });
+    }
+
+    try {
+      await Avisos.update(
+        {
+          titulo,
+          conteudo,
+          data_postagem,
+        },
+        {
+          where: { ID: id },
+        }
+      );
+
+      return res
+        .status(200)
+        .json({ message: "Dados atualizados com sucesso." });
+    } catch (error) {
+      Logger.error(`Erro ao editar aviso no banco: ${error}`);
+      return res.status(500).json({ message: "Erro ao editar aviso." });
+    }
+  }
+
+  static async deleteAviso(req, res) {
+    const id = req.params.id;
+    const user = req.user;
+
+    const avisoExistente = await Avisos.findOne({
+      where: {
+        ID: id,
+        autor_id: user.id_number,
+      },
+    });
+
+    if (!avisoExistente) {
+      return res.status(404).json({
+        message: "Aviso não existente.",
+      });
+    }
+
+    try {
+      await avisoExistente.destroy();
+      res.status(200).json({ message: "Aviso removido com sucesso." });
+    } catch (error) {
+      Logger.error(`Erro ao remover o aviso no banco: ${error}`);
+      res
+        .status(500)
+        .json({ message: "Erro interno ao tentar remover o aviso." });
     }
   }
 }
