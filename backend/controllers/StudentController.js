@@ -6,6 +6,7 @@ import Matriculas from "../models/Matriculas.js";
 import Horarios from "../models/Horarios.js";
 import Disciplinas from "../models/Disciplinas.js";
 import { Op } from "sequelize";
+import Disciplinas from "../models/Disciplinas.js";
 
 export default class StudentController {
   static async minhasNotas(req, res) {
@@ -13,7 +14,16 @@ export default class StudentController {
 
     try {
       const notasExists = await Notas.findAll({
-        where: { aluno_id: aluno.ID },
+        attributes: ["valor_nota", "bimestre"],
+        where: {
+          aluno_id: aluno.ID,
+        },
+        include: [
+          {
+            model: Disciplinas,
+            attributes: ["nome_disciplina"],
+          },
+        ],
       });
 
       if (notasExists.length === 0) {
@@ -23,11 +33,11 @@ export default class StudentController {
       }
 
       return res.status(200).json({
-        notas: notasExists,
+        notasExists,
       });
     } catch (error) {
       Logger.error(`Erro encontrar notas. ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro interno ao buscar suas notas." });
     }
   }
 
@@ -96,11 +106,18 @@ export default class StudentController {
       }
 
       const horarios = await Horarios.findAll({
+        attributes: ["horario_inicio", "horario_fim", "dia_semana"],
         where: {
           disciplina_id: {
             [Op.in]: disciplinasMatriculadas.map((d) => d.disciplina_id),
           },
         },
+        include: [
+          {
+            model: Disciplinas,
+            attributes: ["nome_disciplina"],
+          },
+        ],
       });
 
       return res.status(200).json({
@@ -108,7 +125,9 @@ export default class StudentController {
       });
     } catch (error) {
       Logger.error(`Erro encontrar horarios. ${error}`);
-      res.status(500).json({ message: error });
+      res
+        .status(500)
+        .json({ message: "Erro interno ao buscar seus horários no banco." });
     }
   }
 }
