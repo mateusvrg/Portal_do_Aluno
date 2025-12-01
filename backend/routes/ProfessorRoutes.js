@@ -13,24 +13,20 @@ router.get(
   verifyToken,
   ProfessorController.minhasFrequencias
 );
-router.get("/me/avisos", verifyToken, ProfessorController.meusAvisos);
 router.post("/nota", verifyToken, ProfessorController.lancarNotas);
 router.post("/frequencia", verifyToken, ProfessorController.lancarFrequencia);
-router.post("/aviso", verifyToken, ProfessorController.lancarAviso);
 router.post(
   "/edit/frequencia",
   verifyToken,
   ProfessorController.editFrequencia
 );
 router.post("/edit/nota", verifyToken, ProfessorController.editNota);
-router.post("/edit/aviso/:id", verifyToken, ProfessorController.editAviso);
 router.delete("/nota/:id", verifyToken, ProfessorController.deleteNota);
 router.delete(
   "/frequencia/:id",
   verifyToken,
   ProfessorController.deleteFrequencia
 );
-router.delete("/aviso/:id", verifyToken, ProfessorController.deleteAviso);
 router.post("/materiais", UploadController.gerarUrlUpload);
 router.post("/materiais-listar", MaterialController.gerarUrlLeitura);
 
