@@ -6,7 +6,6 @@ import Matriculas from "../models/Matriculas.js";
 import Horarios from "../models/Horarios.js";
 import Disciplinas from "../models/Disciplinas.js";
 import { Op } from "sequelize";
-import Disciplinas from "../models/Disciplinas.js";
 
 export default class StudentController {
   static async minhasNotas(req, res) {
