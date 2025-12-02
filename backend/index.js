@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(cors({ credentials: true, origin: `http://localhost:${port_app}` }));
 
 //Routes
-app.use("/users", AdminRouter);
+app.use("/admin", AdminRouter);
 app.use("/", AuthRouter);
 app.use("/student", StudentRouter);
 app.use("/professor", ProfessorRouter);

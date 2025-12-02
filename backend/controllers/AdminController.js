@@ -1,26 +1,27 @@
+// Models
 import User from "../models/User.js";
 import Professor from "../models/Professores.js";
 import Aluno from "../models/Aluno.js";
-import bcrypt from "bcryptjs";
-import Logger from "../db/logger.js";
-import createUserToken from "../helpers/create-user-token.js";
-import getToken from "../helpers/get-token.js";
-import jwt from "jsonwebtoken";
 import Turma from "../models/Turma.js";
-import sequelize from "../db/db.js";
 import Disciplinas from "../models/Disciplinas.js";
 import Professores from "../models/Professores.js";
 import Matriculas from "../models/Matriculas.js";
 import Horarios from "../models/Horarios.js";
 import Avisos from "../models/Avisos.js";
+// Middleware
+import getToken from "../helpers/get-token.js";
+// Session on database
+import sequelize from "../db/db.js";
+// Liberies
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+// Logger status code
+import Logger from "../db/logger.js";
+
 
 export default class AdminController {
   static async register(req, res) {
-    const name = req.body.name;
-    const email = req.body.email;
-    const password = req.body.password;
-    const confirmpassword = req.body.confirmpassword;
-    const typeUser = req.body.typeuser;
+    const { name, email, password, confirmpassword, typeuser: typeUser } = req.body;
 
     // validations
     if (!name) {
@@ -67,7 +68,7 @@ export default class AdminController {
       return;
     }
 
-    // create password
+    // create hash password 
     const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(password, salt);
 
@@ -102,7 +103,7 @@ export default class AdminController {
         if (professorExists) {
           await User.destroy({ where: { ID: user_id } });
           res.status(422).json({
-            message: "Erro ao cadastrar professor!",
+            message: "Erro ao cadastrar professor - Usuário já utilizado!",
           });
           Logger.error(`Usuario_id já utilizado: ${user_id}`);
           return;
@@ -118,12 +119,11 @@ export default class AdminController {
         } catch (error) {
           await User.destroy({ where: { ID: user_id } });
           Logger.error(`Erro ao criar professor no banco: ${error}`);
-          res.status(500).json({ message: error });
+          res.status(500).json({ message: "Erro ao criar professor no banco!" });
         }
       } else if (typeUser == "aluno") {
         const user_id = newUser.ID;
-        const matricula = req.body.matricula;
-        const turma_id = req.body.turma;
+        const { matricula, turma: turma_id } = req.body;
 
         // validations
         if (!matricula) {
@@ -143,7 +143,7 @@ export default class AdminController {
         if (!turmaExists) {
           await User.destroy({ where: { ID: user_id } });
           res.status(422).json({
-            message: "Erro ao cadastrar aluno!",
+            message: "Erro ao cadastrar aluno - Turma não encontrada!",
           });
           Logger.error(`Turma não encontrada com o ID: ${turma_id}`);
           return;
@@ -158,7 +158,7 @@ export default class AdminController {
         if (alunoExists) {
           await User.destroy({ where: { ID: user_id } });
           res.status(422).json({
-            message: "Erro ao cadastrar aluno!",
+            message: "Erro ao cadastrar aluno - Usuário já utilizado!",
           });
           Logger.error(`Usuario_id já utilizado: ${user_id}`);
           return;
@@ -175,14 +175,14 @@ export default class AdminController {
         } catch (error) {
           await User.destroy({ where: { ID: user_id } });
           Logger.error(`Erro ao criar aluno no banco: ${error}`);
-          res.status(500).json({ message: error });
+          res.status(500).json({ message: "Erro ao criar aluno no banco" });
         }
       }
 
-      await createUserToken(newUser, req, res);
+      res.status(200).json({ message: "Usário cadastrado com sucesso", user: newUser })
     } catch (error) {
       Logger.error(`Erro ao criar user no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao criar user no banco!" });
     }
   }
 
@@ -231,11 +231,13 @@ export default class AdminController {
   }
 
   static async editUser(req, res) {
-    const usuario_id = req.body.iduser;
-    const nome = req.body.nome;
-    const senha_hash = req.body.senha;
-    const senha_hash_rep = req.body.senhaconfirm;
-    const tipo = req.body.tipo;
+    const {
+      iduser: usuario_id,
+      nome,
+      senha: senha_hash,
+      senhaconfirm: senha_hash_rep,
+      tipo
+    } = req.body;
 
     // validations
     if (!nome) {
@@ -272,8 +274,7 @@ export default class AdminController {
 
     if (tipo == "aluno") {
       const t = await sequelize.transaction();
-      const matricula = req.body.matricula;
-      const turma_id = req.body.turmaid;
+      const { matricula, turmaid: turma_id } = req.body;
       // validations
       if (!matricula) {
         res.status(422).json({ message: "A matricula é obrigatória!" });
@@ -288,7 +289,7 @@ export default class AdminController {
       const turmaExists = await Turma.findOne({ where: { ID: turma_id } });
       if (!turmaExists) {
         res.status(422).json({
-          message: "Erro ao cadastrar aluno!",
+          message: "Erro ao cadastrar aluno - Turma não encontrada!",
         });
         Logger.error(`Turma não encontrada com o ID: ${turma_id}`);
         return;
@@ -317,12 +318,12 @@ export default class AdminController {
         );
         // Se tudo deu certo:
         await t.commit();
-        res.json({
+        res.status(200).json({
           message: "Usuário atualizado com sucesso!",
         });
       } catch (error) {
         Logger.error(`Erro ao atualizar user no banco: ${error}`);
-        res.status(500).json({ message: error });
+        res.status(500).json({ message: "Erro ao atualizar user no banco!" });
       }
     } else if (tipo == "professor") {
       const t = await sequelize.transaction();
@@ -355,12 +356,12 @@ export default class AdminController {
         );
         // Se tudo deu certo:
         await t.commit();
-        res.json({
+        res.status(200).json({
           message: "Usuário atualizado com sucesso!",
         });
       } catch (error) {
         Logger.error(`Erro ao atualizar user no banco: ${error}`);
-        res.status(500).json({ message: error });
+        res.status(500).json({ message: "Erro ao atualizar user no banco!" });
       }
     } else {
       try {
@@ -373,12 +374,12 @@ export default class AdminController {
             where: { ID: usuario_id }, // IMPORTANTE: Atualiza pelo id do usuário
           }
         );
-        res.json({
+        res.status(200).json({
           message: "Usuário atualizado com sucesso!",
         });
       } catch (error) {
         Logger.error(`Erro ao atualizar user no banco: ${error}`);
-        res.status(500).json({ message: error });
+        res.status(500).json({ message: "Erro ao atualizar user no banco!" });
       }
     }
   }
@@ -401,13 +402,12 @@ export default class AdminController {
       res.status(200).json({ message: "Usuário removido com sucesso!" });
     } catch (error) {
       Logger.error(`Erro ao remover o usuário no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao remover user no banco!" });
     }
   }
 
   static async createTurma(req, res) {
-    const name = req.body.name;
-    const ano = req.body.ano;
+    const { name, ano } = req.body;
 
     // validations
     if (!name) {
@@ -436,10 +436,10 @@ export default class AdminController {
     // save turma on db
     try {
       const newTurma = await turma.save();
-      res.json({ message: "A turma foi cadastrada com sucesso!" });
+      res.status(200).json({ message: "A turma foi cadastrada com sucesso!" });
     } catch (error) {
       Logger.error(`Erro ao criar turma no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao criar Turma no banco!" });
     }
   }
 
@@ -454,14 +454,12 @@ export default class AdminController {
       res.status(200).json({ turma });
     } catch (error) {
       Logger.error(`Erro ao encontrar turma(s) no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao encontrar Turma" });
     }
   }
 
   static async editTurma(req, res) {
-    const id_turma = req.body.idturma;
-    const ano_letivo = req.body.ano;
-    const nome_turma = req.body.nome;
+    const { idturma: id_turma, ano: ano_letivo, nome: nome_turma } = req.body;
 
     if (!id_turma) {
       Logger.error(`ID turma não identificado ou vazio!`);
@@ -487,12 +485,12 @@ export default class AdminController {
           where: { ID: id_turma },
         }
       );
-      res.json({
+      res.status(200).json({
         message: "Turma atualizada com sucesso!",
       });
     } catch (error) {
       Logger.error(`Erro ao atualizar turma no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao atualizar Turma no banco!" });
     }
   }
 
@@ -514,13 +512,12 @@ export default class AdminController {
       res.status(200).json({ message: "Turma removida com sucesso!" });
     } catch (error) {
       Logger.error(`Erro ao remover o Turma no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao remover Turma no banco!" });
     }
   }
 
   static async createDisciplina(req, res) {
-    const nome_disciplina = req.body.nome;
-    const professor_id = req.body.idprofessor;
+    const { nome: nome_disciplina, idprofessor: professor_id } = req.body;
 
     // validations
     if (!nome_disciplina) {
@@ -550,18 +547,18 @@ export default class AdminController {
       professor_id: professor_id,
     });
 
-    // save turma on db
+    // save disciplina on db
     try {
       const newDisciplina = await disciplina.save();
-      res.json({ message: "A disciplina foi cadastrada com sucesso!" });
+      res.status(200).json({ message: "A disciplina foi cadastrada com sucesso!" });
     } catch (error) {
       Logger.error(`Erro ao criar disciplina no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao criar Discip[lina no banco!" });
     }
   }
 
   static async selectDisciplina(req, res) {
-    const professor_id = req.body.professor_id;
+    const { professor_id } = req.body;
     if (!professor_id) {
       res.status(422).json({ message: "Professor não identificado!" });
       return;
@@ -573,14 +570,17 @@ export default class AdminController {
       res.status(200).json({ disciplina });
     } catch (error) {
       Logger.error(`Erro ao encontrar disciplina(s) no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao encontrar disciplina(s) no banco!" });
     }
   }
 
   static async editDisciplina(req, res) {
-    const discplina_id = req.body.iddisciplina;
-    const nome_disciplina = req.body.nome;
-    const professor_id = req.body.idprofessor;
+    const {
+      iddisciplina: discplina_id,
+      nome: nome_disciplina,
+      idprofessor: professor_id
+    } = req.body;
+
 
     if (!discplina_id) {
       Logger.error(`ID disciplina não identificado ou vazio!`);
@@ -609,12 +609,12 @@ export default class AdminController {
           where: { ID: discplina_id },
         }
       );
-      res.json({
+      res.status(200).json({
         message: "Disciplina atualizada com sucesso!",
       });
     } catch (error) {
       Logger.error(`Erro ao atualizar disciplina no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao atualizar disciplina no banco!" });
     }
   }
 
@@ -636,13 +636,12 @@ export default class AdminController {
       res.status(200).json({ message: "Disciplina removida com sucesso!" });
     } catch (error) {
       Logger.error(`Erro ao remover o Disciplina no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao remover o Disciplina no banco!" });
     }
   }
 
   static async createMatricula(req, res) {
-    const aluno_id = req.body.alunoid;
-    const disciplina_id = req.body.disciplinaid;
+    const { alunoid: aluno_id, disciplinaid: disciplina_id } = req.body;
 
     // validations
     if (!aluno_id) {
@@ -687,12 +686,12 @@ export default class AdminController {
     // save matricula on db
     try {
       const newMatricula = await matricula.save();
-      res.json({ message: "A matricula foi realizada com sucesso!" });
+      res.status(200).json({ message: "A matricula foi realizada com sucesso!" });
     } catch (error) {
       Logger.error(
         `Erro ao matricular aluno da disciplina, Ou matricula já realizada: ${error}`
       );
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao matricular aluno da disciplina, Ou matricula já realizada!" });
     }
   }
 
@@ -709,7 +708,7 @@ export default class AdminController {
       res.status(200).json({ alunos_da_disciplina });
     } catch (error) {
       Logger.error(`Erro ao encontrar alunos matriculados no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao encontrar alunos matriculados no banco!" });
     }
   }
 
@@ -728,13 +727,12 @@ export default class AdminController {
       Logger.error(
         `Erro ao encontrar disciplina(s) do aluno no banco: ${error}`
       );
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao encontrar disciplina(s) do aluno no banco!" });
     }
   }
 
   static async deleteMatricula(req, res) {
-    const id_aluno = req.params.idaluno;
-    const id_disciplina = req.params.iddisciplina;
+    const { idaluno: id_aluno, iddisciplina: id_disciplina } = req.params;
 
     // search for matricula on db
     const matricula = await Matriculas.findOne({
@@ -743,7 +741,7 @@ export default class AdminController {
 
     // validation
     if (!matricula) {
-      res.status(404).json({ message: "Matricula não encontrada!" });
+      res.status(422).json({ message: "Matricula não encontrada!" });
       return;
     }
 
@@ -755,15 +753,12 @@ export default class AdminController {
       res.status(200).json({ message: "Matricula removida com sucesso!" });
     } catch (error) {
       Logger.error(`Erro ao remover o Matricula no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao remover o Matricula no banco!" });
     }
   }
 
   static async createHorario(req, res) {
-    const disciplina_id = req.body.disciplinaid;
-    const horario_inicio = req.body.horarioinicio;
-    const horario_fim = req.body.horariofim;
-    const dia_semana = req.body.diasemana;
+    const { disciplinaid: disciplina_id, horarioinicio: horario_inicio, horariofim: horario_fim, diasemana: dia_semana } = req.body;
 
     if (!horario_inicio) {
       res
@@ -811,15 +806,15 @@ export default class AdminController {
       dia_semana: dia_semana,
     });
 
-    // save matricula on db
+    // save horario on db
     try {
       const newHorario = await horario.save();
-      res.json({
+      res.status(200).json({
         message: "O horário foi atribuido a disciplina com sucesso!",
       });
     } catch (error) {
       Logger.error(`Erro ao atribuir horario a disciplina: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao atribuir horario a disciplina!" });
     }
   }
 
@@ -838,15 +833,17 @@ export default class AdminController {
       Logger.error(
         `Erro ao identificar horarios da disciplina no banco: ${error}`
       );
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao identificar horarios da disciplina no banco!" });
     }
   }
 
   static async editHorarioDisciplina(req, res) {
-    const horario_id = req.body.horarioid;
-    const horario_inicio = req.body.horarioinicio;
-    const horario_fim = req.body.horariofim;
-    const dia_semana = req.body.diasemana;
+    const {
+      horarioid: horario_id,
+      horarioinicio: horario_inicio,
+      horariofim: horario_fim,
+      diasemana: dia_semana
+    } = req.body;
 
     if (!horario_inicio) {
       res
@@ -894,12 +891,12 @@ export default class AdminController {
           where: { ID: horario_id },
         }
       );
-      res.json({
+      res.status(200).json({
         message: "Horario atualizado com sucesso!",
       });
     } catch (error) {
       Logger.error(`Erro ao atualizar horario no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao atualizar horario no banco!" });
     }
   }
 
@@ -912,7 +909,7 @@ export default class AdminController {
     // validation
     if (!horario) {
       res
-        .status(404)
+        .status(422)
         .json({ message: "Horario da disciplina não encontrado!" });
       return;
     }
@@ -923,7 +920,7 @@ export default class AdminController {
       res.status(200).json({ message: "Horario removido com sucesso!" });
     } catch (error) {
       Logger.error(`Erro ao remover o Horario no banco: ${error}`);
-      res.status(500).json({ message: error });
+      res.status(500).json({ message: "Erro ao remover o Horario no banco!" });
     }
   }
 
@@ -964,7 +961,7 @@ export default class AdminController {
         data_postagem,
       });
 
-      return res.status(201).json({
+      return res.status(200).json({
         message: "Aviso lançado com sucesso!",
         aviso: novoAviso,
       });
@@ -1033,7 +1030,7 @@ export default class AdminController {
     });
 
     if (!avisoExistente) {
-      return res.status(404).json({
+      return res.status(422).json({
         message: "Aviso não existente.",
       });
     }

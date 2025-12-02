@@ -27,7 +27,9 @@ router.delete(
   verifyToken,
   ProfessorController.deleteFrequencia
 );
-router.post("/materiais", UploadController.gerarUrlUpload);
-router.post("/materiais-listar", MaterialController.gerarUrlLeitura);
+router.post("/materiais", verifyToken, ProfessorController.uploadMaterial);
+router.get("/me/materiais", verifyToken, ProfessorController.meusMateriais);
+router.delete("/material/:id", verifyToken, ProfessorController.deleteMaterial);
+router.post("/edit/material", verifyToken, ProfessorController.editMaterial);
 
 export default router;
