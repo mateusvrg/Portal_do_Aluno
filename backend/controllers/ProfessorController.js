@@ -1,11 +1,18 @@
+// Models
 import Turma from "../models/Turma.js";
 import ProfessoresTurmas from "../models/ProfessoresTurmas.js";
 import Disciplina from "../models/Disciplinas.js";
 import Aluno from "../models/Aluno.js";
 import Notas from "../models/Notas.js";
 import Frequencia from "../models/Frequencia.js";
-import { Op } from "sequelize";
+import Materiaisaula from "../models/Materiaisaula.js";
+// Helpers
+import generateUrl from "../helpers/aws-upload-s3.js";
+import delUrl from "../helpers/aws-delete-s3.js";
+// Logger status code
 import Logger from "../db/logger.js";
+// Libery
+import { Op } from "sequelize";
 
 export default class ProfessorController {
   // LIST FUNCTIONS
@@ -109,6 +116,37 @@ export default class ProfessorController {
         message: "Erro interno ao buscar frequências no banco.",
       });
     }
+  }
+
+  static async meusMateriais(req, res) {
+    const professor = req.professor;
+
+    const minhasDisciplinas = await Disciplina.findAll({
+      attributes: ["ID"],
+      where: { professor_id: professor.ID },
+    });
+
+    if (minhasDisciplinas.length == 0) {
+      return res.status(422).json({
+        message: "Você não tem disciplinas.",
+      });
+    }
+
+    const materiais = await Materiaisaula.findAll({
+      where: {
+        disciplina_id: {
+          [Op.in]: minhasDisciplinas.map((d) => d.ID),
+        },
+      },
+    });
+
+    if (materiais.length == 0) {
+      return res.status(422).json({
+        message: "Você não tem materiais.",
+      });
+    }
+
+    return res.status(200).json({ materiais });
   }
 
   // CREATE FUNCTIONS
@@ -233,6 +271,64 @@ export default class ProfessorController {
     } catch (error) {
       Logger.error(`Erro ao postar notas no banco: ${error}`);
       return res.status(500).json({ message: "Erro ao postar nota." });
+    }
+  }
+
+  static async uploadMaterial(req, res) {
+    const professor = req.professor;
+
+    try {
+      // passo 1: gera URL
+      const { nomeArquivo, tipoArquivo, descricao, titulo, disciplina_id } =
+        req.body;
+
+      if (
+        !nomeArquivo ||
+        !tipoArquivo ||
+        !descricao ||
+        !titulo ||
+        !disciplina_id
+      ) {
+        return res
+          .status(422)
+          .json({ message: "Todos os campos são obrigatórios!" });
+      }
+
+      const disciplinaProfessor = await Disciplina.findOne({
+        where: {
+          ID: disciplina_id,
+          professor_id: professor.ID,
+        },
+      });
+
+      if (!disciplinaProfessor) {
+        return res.status(403).json({
+          message:
+            "Você não tem permissão para lançar materiais nesta disciplina, ou disciplina não encontrada.",
+        });
+      }
+
+      const { uploadUrl, publicUrl } = await generateUrl(
+        nomeArquivo,
+        tipoArquivo
+      );
+
+      // passo 2: salva o registro no banco
+      await Materiaisaula.create({
+        disciplina_id,
+        titulo,
+        descricao,
+        arquivo_url: publicUrl,
+      });
+
+      return res.status(200).json({
+        message: "URL gerada com sucesso!",
+        uploadUrl,
+        publicUrl,
+      });
+    } catch (error) {
+      Logger.error(`Erro ao postar material no banco: ${error}`);
+      return res.status(500).json({ error: "Erro ao enviar material" });
     }
   }
 
@@ -372,6 +468,60 @@ export default class ProfessorController {
     }
   }
 
+  static async editMaterial(req, res) {
+    try {
+      const { idMaterial, nomeArquivo, tipoArquivo, titulo, descricao } =
+        req.body;
+
+      if (
+        !idMaterial ||
+        !nomeArquivo ||
+        !tipoArquivo ||
+        !descricao ||
+        !titulo
+      ) {
+        return res
+          .status(422)
+          .json({ message: "Todos os campos são obrigatórios!" });
+      }
+
+      const material = await Materiaisaula.findByPk(idMaterial);
+
+      if (!material)
+        return res.status(422).json({ message: "Material não encontrado." });
+
+      const materialProfessor = await Disciplina.findOne({
+        where: {
+          professor_id: req.professor.ID,
+          ID: material.disciplina_id,
+        },
+      });
+
+      if (!materialProfessor) {
+        return res
+          .status(422)
+          .json({
+            message: "Material não encontrado, ou permissão insuficiente.",
+          });
+      }
+      // gerar nova URL
+      const { uploadUrl, publicUrl } = await generateUrl(
+        nomeArquivo,
+        tipoArquivo
+      );
+
+      // atualizar no banco
+      material.arquivo_url = publicUrl;
+      material.titulo = titulo;
+      material.descricao = descricao;
+      await material.save();
+
+      return res.json({ uploadUrl, publicUrl });
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao atualizar material" });
+    }
+  }
+
   // DELETE FUNCTIONS
   static async deleteNota(req, res) {
     const id = req.params.id;
@@ -451,6 +601,40 @@ export default class ProfessorController {
       res
         .status(500)
         .json({ message: "Erro interno ao tentar remover a frequência." });
+    }
+  }
+
+  static async deleteMaterial(req, res) {
+    try {
+      const { id } = req.params;
+
+      const material = await Materiaisaula.findByPk(id);
+
+      if (!material) {
+        return res.status(422).json({ message: "Material não encontrado." });
+      }
+
+      const materialProfessor = await Disciplina.findOne({
+        where: {
+          professor_id: req.professor.ID,
+          ID: material.disciplina_id,
+        },
+      });
+
+      if (!materialProfessor) {
+        return res.status(422).json({ message: "Material não encontrado." });
+      }
+
+      // deletar arquivo do bucket
+      //await delUrl(material.arquivo_url);
+
+      await material.destroy();
+
+      return res
+        .status(200)
+        .json({ message: "Material removido com sucesso." });
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao deletar material." });
     }
   }
 }
