@@ -1,35 +1,33 @@
 import routerEX from "express";
 import ProfessorController from "../controllers/ProfessorController.js";
-import verifyToken from "../helpers/check-token-professor.js";
-import UploadController from "../helpers/aws-upload-s3.js";
-import MaterialController from "../helpers/aws-get-materiais-s3.js";
+import verifyTokenProfessor from "../helpers/check-token-professor.js";
 
 const router = routerEX.Router();
 
-router.get("/me/turmas", verifyToken, ProfessorController.minhasTurma);
-router.get("/me/notas", verifyToken, ProfessorController.minhasNotas);
+router.get("/me/turmas", verifyTokenProfessor, ProfessorController.minhasTurma);
+router.get("/me/notas", verifyTokenProfessor, ProfessorController.minhasNotas);
 router.get(
   "/me/frequencias",
-  verifyToken,
+  verifyTokenProfessor,
   ProfessorController.minhasFrequencias
 );
-router.post("/nota", verifyToken, ProfessorController.lancarNotas);
-router.post("/frequencia", verifyToken, ProfessorController.lancarFrequencia);
+router.get("/me/materiais", verifyTokenProfessor, ProfessorController.meusMateriais);
+router.post("/nota", verifyTokenProfessor, ProfessorController.lancarNotas);
+router.post("/frequencia", verifyTokenProfessor, ProfessorController.lancarFrequencia);
+router.post("/materiais", verifyTokenProfessor, ProfessorController.uploadMaterial);
 router.post(
   "/edit/frequencia",
-  verifyToken,
+  verifyTokenProfessor,
   ProfessorController.editFrequencia
 );
-router.post("/edit/nota", verifyToken, ProfessorController.editNota);
-router.delete("/nota/:id", verifyToken, ProfessorController.deleteNota);
+router.post("/edit/nota", verifyTokenProfessor, ProfessorController.editNota);
+router.post("/edit/material", verifyTokenProfessor, ProfessorController.editMaterial);
+router.delete("/nota/:id", verifyTokenProfessor, ProfessorController.deleteNota);
 router.delete(
   "/frequencia/:id",
-  verifyToken,
+  verifyTokenProfessor,
   ProfessorController.deleteFrequencia
 );
-router.post("/materiais", verifyToken, ProfessorController.uploadMaterial);
-router.get("/me/materiais", verifyToken, ProfessorController.meusMateriais);
-router.delete("/material/:id", verifyToken, ProfessorController.deleteMaterial);
-router.post("/edit/material", verifyToken, ProfessorController.editMaterial);
+router.delete("/material/:id", verifyTokenProfessor, ProfessorController.deleteMaterial);
 
 export default router;
