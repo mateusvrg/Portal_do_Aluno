@@ -8,7 +8,6 @@ import Frequencia from "../models/Frequencia.js";
 import Materiaisaula from "../models/Materiaisaula.js";
 // Helpers
 import generateUrl from "../helpers/aws-upload-s3.js";
-import delUrl from "../helpers/aws-delete-s3.js";
 // Logger status code
 import Logger from "../db/logger.js";
 // Libery
@@ -39,7 +38,7 @@ export default class ProfessorController {
       }));
 
       if (turmasEncontradas.length == 0) {
-        return res.status(200).json({
+        return res.status(422).json({
           nome_turma: "Turma não encontrada",
           ano_letivo: "N/A",
         });
@@ -65,8 +64,8 @@ export default class ProfessorController {
         where: { professor_id: professor.ID },
       });
 
-      if (disciplinaProfessor.length === 0) {
-        return res.status(200).json({ frequenciasLancadas: [] });
+      if (disciplinaProfessor.length == 0) {
+        return res.status(422).json({ message: "Disciplinas não encontradas!" });
       }
 
       const idsDisciplinas = disciplinaProfessor.map((d) => d.ID);
@@ -95,8 +94,8 @@ export default class ProfessorController {
         where: { professor_id: professor.ID },
       });
 
-      if (disciplinaProfessor.length === 0) {
-        return res.status(200).json({ frequenciasLancadas: [] });
+      if (disciplinaProfessor.length == 0) {
+        return res.status(422).json({ message: "Disciplinas não encontradas!" });
       }
 
       const idsDisciplinas = disciplinaProfessor.map((d) => d.ID);
@@ -154,7 +153,7 @@ export default class ProfessorController {
     const { aluno_id, disciplina_id, data, presente } = req.body;
 
     // validation
-    if (!aluno_id || !disciplina_id || !data || presente === undefined) {
+    if (!aluno_id || !disciplina_id || !data || !presente ) {
       return res
         .status(422)
         .json({ message: "Todos os campos são obrigatórios." });
@@ -170,7 +169,7 @@ export default class ProfessorController {
     });
 
     if (!disciplinaProfessor) {
-      return res.status(403).json({
+      return res.status(422).json({
         message:
           "Você não tem permissão para lançar frequências nesta disciplina.",
       });
@@ -217,7 +216,7 @@ export default class ProfessorController {
     const { aluno_id, disciplina_id, bimestre, valor_nota } = req.body;
 
     // validation
-    if (!aluno_id || !disciplina_id || !bimestre || valor_nota === undefined) {
+    if (!aluno_id || !disciplina_id || !bimestre || !valor_nota) {
       return res
         .status(422)
         .json({ message: "Todos os campos são obrigatórios!" });
@@ -240,7 +239,7 @@ export default class ProfessorController {
 
     const alunoExiste = await Aluno.findByPk(aluno_id);
     if (!alunoExiste) {
-      return res.status(404).json({ message: "Aluno não encontrado." });
+      return res.status(422).json({ message: "Aluno não encontrado." });
     }
 
     const notaExistente = await Notas.findOne({
@@ -267,7 +266,7 @@ export default class ProfessorController {
 
       return res
         .status(201)
-        .json({ message: "Nota lançada com sucesso!", nota: novaNota });
+        .json({ message: "Nota lançada com sucesso!", novaNota });
     } catch (error) {
       Logger.error(`Erro ao postar notas no banco: ${error}`);
       return res.status(500).json({ message: "Erro ao postar nota." });
@@ -321,7 +320,7 @@ export default class ProfessorController {
         arquivo_url: publicUrl,
       });
 
-      return res.status(200).json({
+      return res.status(201).json({
         message: "URL gerada com sucesso!",
         uploadUrl,
         publicUrl,
@@ -337,7 +336,7 @@ export default class ProfessorController {
     const { aluno_id, disciplina_id, bimestre, valor_nota } = req.body;
 
     // validation
-    if (!aluno_id || !disciplina_id || !bimestre || valor_nota === undefined) {
+    if (!aluno_id || !disciplina_id || !bimestre || !valor_nota ) {
       return res
         .status(422)
         .json({ message: "Todos os campos são obrigatórios." });
@@ -360,7 +359,7 @@ export default class ProfessorController {
 
     const alunoExiste = await Aluno.findByPk(aluno_id);
     if (!alunoExiste) {
-      return res.status(404).json({ message: "Aluno não encontrado." });
+      return res.status(422).json({ message: "Aluno não encontrado." });
     }
 
     const notaExists = await Notas.findOne({
@@ -372,8 +371,8 @@ export default class ProfessorController {
     });
 
     if (!notaExists) {
-      return res.status(404).json({
-        message: "Não existe nota deste aluno para editar.",
+      return res.status(422).json({
+        message: "Não existe nota deste aluno.",
       });
     }
 
@@ -391,7 +390,7 @@ export default class ProfessorController {
       );
       return res.status(200).json({
         message: "Nota atualizada com sucesso!",
-        notaAtt: valor_nota,
+        attNotas,
       });
     } catch (error) {
       Logger.error(`Erro ao editar notas no banco: ${error}`);
@@ -405,7 +404,7 @@ export default class ProfessorController {
     const { aluno_id, disciplina_id, data, presente } = req.body;
 
     // validation
-    if (!aluno_id || !disciplina_id || !data || presente === undefined) {
+    if (!aluno_id || !disciplina_id || !data || !presente ) {
       return res
         .status(422)
         .json({ message: "Todos os campos são obrigatórios." });
@@ -430,7 +429,7 @@ export default class ProfessorController {
     const alunoExiste = await Aluno.findByPk(aluno_id);
 
     if (!alunoExiste) {
-      return res.status(404).json({ message: "Aluno não encontrado." });
+      return res.status(422).json({ message: "Aluno não encontrado." });
     }
 
     const frequenciaExist = await Frequencia.findOne({
@@ -443,12 +442,11 @@ export default class ProfessorController {
 
     if (!frequenciaExist) {
       return res
-        .status(404)
+        .status(422)
         .json({ message: "Frequência não encontrada para edição." });
     }
 
     try {
-      //await Frequencia.destroy({ where: aluno_id, disciplina_id, data });
       await Frequencia.update(
         {
           presente,
@@ -469,10 +467,10 @@ export default class ProfessorController {
   }
 
   static async editMaterial(req, res) {
-    try {
-      const { idMaterial, nomeArquivo, tipoArquivo, titulo, descricao } =
+    const { idMaterial, nomeArquivo, tipoArquivo, titulo, descricao } =
         req.body;
-
+    try {
+      
       if (
         !idMaterial ||
         !nomeArquivo ||
@@ -534,7 +532,7 @@ export default class ProfessorController {
     });
 
     if (!notaExistente) {
-      return res.status(404).json({
+      return res.status(422).json({
         message: "Nota não existente.",
       });
     }
@@ -574,7 +572,7 @@ export default class ProfessorController {
     });
 
     if (!frequenciaExistente) {
-      return res.status(404).json({
+      return res.status(422).json({
         message: "Frequência não existente.",
       });
     }
@@ -605,9 +603,9 @@ export default class ProfessorController {
   }
 
   static async deleteMaterial(req, res) {
-    try {
-      const { id } = req.params;
+    const { id } = req.params;
 
+    try {
       const material = await Materiaisaula.findByPk(id);
 
       if (!material) {
@@ -624,9 +622,6 @@ export default class ProfessorController {
       if (!materialProfessor) {
         return res.status(422).json({ message: "Material não encontrado." });
       }
-
-      // deletar arquivo do bucket
-      //await delUrl(material.arquivo_url);
 
       await material.destroy();
 
