@@ -12,6 +12,7 @@ import generateUrl from "../helpers/aws-upload-s3.js";
 import Logger from "../db/logger.js";
 // Libery
 import { Op } from "sequelize";
+import Matriculas from "../models/Matriculas.js";
 
 export default class ProfessorController {
   // LIST FUNCTIONS
@@ -75,6 +76,11 @@ export default class ProfessorController {
           disciplina_id: { [Op.in]: idsDisciplinas }, // Busca em todas
         },
       });
+
+      if (notasLancadas.length == 0) {
+        return res.status(422).json({ message: "Você não tem notas lançadas." })
+      }
+
       return res.status(200).json({
         notasLancadas,
       });
@@ -105,6 +111,10 @@ export default class ProfessorController {
           disciplina_id: { [Op.in]: idsDisciplinas },
         },
       });
+
+      if (frequenciasLancadas.length == 0) {
+        return res.status(422).json({ message: "Nenhuma frequência lançada até o momento." });
+      }
 
       return res.status(200).json({
         frequenciasLancadas,
@@ -153,7 +163,7 @@ export default class ProfessorController {
     const { aluno_id, disciplina_id, data, presente } = req.body;
 
     // validation
-    if (!aluno_id || !disciplina_id || !data || !presente ) {
+    if (!aluno_id || !disciplina_id || !data || !presente) {
       return res
         .status(422)
         .json({ message: "Todos os campos são obrigatórios." });
@@ -178,6 +188,17 @@ export default class ProfessorController {
     const alunoExiste = await Aluno.findByPk(aluno_id);
     if (!alunoExiste) {
       return res.status(404).json({ message: "Aluno não encontrado." });
+    }
+
+    const matriculaExist = await Matriculas.findOne({
+      where: {
+        aluno_id,
+        disciplina_id,
+      },
+    });
+
+    if (!matriculaExist) {
+      return res.status(422).json({ message: "Matricula não encontrada." });
     }
 
     const frequenciaExistente = await Frequencia.findOne({
@@ -238,8 +259,20 @@ export default class ProfessorController {
     }
 
     const alunoExiste = await Aluno.findByPk(aluno_id);
+
     if (!alunoExiste) {
       return res.status(422).json({ message: "Aluno não encontrado." });
+    }
+
+    const matriculaExist = await Matriculas.findOne({
+      where: {
+        aluno_id,
+        disciplina_id,
+      },
+    });
+
+    if (!matriculaExist) {
+      return res.status(422).json({ message: "Matricula não encontrada." });
     }
 
     const notaExistente = await Notas.findOne({
@@ -307,7 +340,7 @@ export default class ProfessorController {
         });
       }
 
-      const { uploadUrl, publicUrl } = await generateUrl(
+      const { uploadUrl, publicUrl, key } = await generateUrl(
         nomeArquivo,
         tipoArquivo
       );
@@ -317,13 +350,14 @@ export default class ProfessorController {
         disciplina_id,
         titulo,
         descricao,
-        arquivo_url: publicUrl,
+        arquivo_url: key,
       });
 
       return res.status(201).json({
         message: "URL gerada com sucesso!",
         uploadUrl,
         publicUrl,
+        key,
       });
     } catch (error) {
       Logger.error(`Erro ao postar material no banco: ${error}`);
@@ -336,7 +370,7 @@ export default class ProfessorController {
     const { aluno_id, disciplina_id, bimestre, valor_nota } = req.body;
 
     // validation
-    if (!aluno_id || !disciplina_id || !bimestre || !valor_nota ) {
+    if (!aluno_id || !disciplina_id || !bimestre || !valor_nota) {
       return res
         .status(422)
         .json({ message: "Todos os campos são obrigatórios." });
@@ -390,7 +424,6 @@ export default class ProfessorController {
       );
       return res.status(200).json({
         message: "Nota atualizada com sucesso!",
-        attNotas,
       });
     } catch (error) {
       Logger.error(`Erro ao editar notas no banco: ${error}`);
@@ -404,7 +437,7 @@ export default class ProfessorController {
     const { aluno_id, disciplina_id, data, presente } = req.body;
 
     // validation
-    if (!aluno_id || !disciplina_id || !data || !presente ) {
+    if (!aluno_id || !disciplina_id || !data || presente === undefined) {
       return res
         .status(422)
         .json({ message: "Todos os campos são obrigatórios." });
@@ -468,9 +501,9 @@ export default class ProfessorController {
 
   static async editMaterial(req, res) {
     const { idMaterial, nomeArquivo, tipoArquivo, titulo, descricao } =
-        req.body;
+      req.body;
     try {
-      
+
       if (
         !idMaterial ||
         !nomeArquivo ||
@@ -503,18 +536,18 @@ export default class ProfessorController {
           });
       }
       // gerar nova URL
-      const { uploadUrl, publicUrl } = await generateUrl(
+      const { uploadUrl, publicUrl, key } = await generateUrl(
         nomeArquivo,
         tipoArquivo
       );
 
       // atualizar no banco
-      material.arquivo_url = publicUrl;
+      material.arquivo_url = key;
       material.titulo = titulo;
       material.descricao = descricao;
       await material.save();
 
-      return res.json({ uploadUrl, publicUrl });
+      return res.json({ uploadUrl, publicUrl, key });
     } catch (error) {
       res.status(500).json({ error: "Erro ao atualizar material" });
     }

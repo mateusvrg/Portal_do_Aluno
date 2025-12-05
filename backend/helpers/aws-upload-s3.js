@@ -18,9 +18,9 @@ const gerarUrl = async (nomeArquivo, tipoArquivo) => {
     expiresIn: 600,
   });
 
-  const publicUrl = `https://${bucket}.s3.amazonaws.com/${key}`;
+  const publicUrl = `https://${bucket}.s3.sa-east-1.amazonaws.com/${key}`;
 
-  return { uploadUrl, publicUrl };
+  return { uploadUrl, publicUrl, key };
 };
 
 export default gerarUrl;
