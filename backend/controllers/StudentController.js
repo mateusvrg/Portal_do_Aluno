@@ -6,6 +6,7 @@ import Matriculas from "../models/Matriculas.js";
 import Horarios from "../models/Horarios.js";
 import Disciplinas from "../models/Disciplinas.js";
 import { Op } from "sequelize";
+import Materiaisaula from "../models/Materiaisaula.js";
 
 export default class StudentController {
   static async minhasNotas(req, res) {
@@ -26,7 +27,7 @@ export default class StudentController {
       });
 
       if (notasExists.length === 0) {
-        return res.status(404).json({
+        return res.status(422).json({
           message: "Notas não encontradas.",
         });
       }
@@ -49,13 +50,13 @@ export default class StudentController {
         include: [
           {
             model: Disciplinas,
-            attributes: ['nome_disciplina']
-          }
-        ]
+            attributes: ["nome_disciplina"],
+          },
+        ],
       });
 
       if (frequenciaExists.length === 0) {
-        return res.status(404).json({
+        return res.status(422).json({
           message: "Frequência(s) não encontradas.",
         });
       }
@@ -75,7 +76,7 @@ export default class StudentController {
       const avisosExists = await Avisos.findAll();
 
       if (avisosExists.length === 0) {
-        return res.status(404).json({
+        return res.status(422).json({
           message: "Avisos não encontrados.",
         });
       }
@@ -98,7 +99,7 @@ export default class StudentController {
       });
 
       if (disciplinasMatriculadas.length == 0) {
-        return res.status(404).json({
+        return res.status(422).json({
           message:
             "Disciplinas não encontrados ou você não está matriculado em nenhuma disciplina.",
         });
@@ -127,6 +128,48 @@ export default class StudentController {
       res
         .status(500)
         .json({ message: "Erro interno ao buscar seus horários no banco." });
+    }
+  }
+
+  static async meusMateriais(req, res) {
+    const aluno = req.aluno;
+
+    try {
+      const disciplinasMatriculadas = await Matriculas.findAll({
+        where: { aluno_id: aluno.ID },
+        attributes: ["disciplina_id"], // pega somente esse campo
+      });
+
+      if (disciplinasMatriculadas.length == 0) {
+        return res.status(422).json({
+          message:
+            "Disciplinas não encontrados ou você não está matriculado em nenhuma disciplina.",
+        });
+      }
+
+      const materiais = await Materiaisaula.findAll({
+        attributes: ["titulo", "descricao", "arquivo_url"],
+        where: {
+          disciplina_id: {
+            [Op.in]: disciplinasMatriculadas.map((d) => d.disciplina_id),
+          },
+        },
+        include: [
+          {
+            model: Disciplinas,
+            attributes: ["nome_disciplina"],
+          },
+        ],
+      });
+
+      return res.status(200).json({
+        materiais,
+      });
+    } catch (error) {
+      Logger.error(`Erro encontrar materiais. ${error}`);
+      res
+        .status(500)
+        .json({ message: "Erro interno ao buscar os materiais no banco." });
     }
   }
 }

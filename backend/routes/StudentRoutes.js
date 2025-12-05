@@ -7,7 +7,7 @@ const router = routerEX.Router();
 router.get("/me/notas", verifyTokenStudent, StudentController.minhasNotas);
 router.get("/me/frequencia", verifyTokenStudent, StudentController.minhasFrequencias);
 router.get("/me/horarios", verifyTokenStudent, StudentController.meusHorarios);
-//router.get("/me/materiais/", verifyToken, StudentController.materiais);
 router.get("/me/avisos", verifyTokenStudent, StudentController.listAvisos);
+router.get("/me/materiais/", verifyTokenStudent, StudentController.meusMateriais);
 
 export default router;
