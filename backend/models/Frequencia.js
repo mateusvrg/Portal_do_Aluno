@@ -11,7 +11,7 @@ const Frequencia = db.define('frequencia', {
         primaryKey: true,
     },
     data: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: false,
     },
     presente: {
