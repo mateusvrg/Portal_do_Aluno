@@ -2,9 +2,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './App.css'
 // Pages
 // import Register from './components/pages/Auth/Register'
-// import Login from './components/pages/Auth/Login'
+import Login from './components/pages/Auth/Login'
 // import Welcome from './components/pages/Welcome'
-// import Home from './components/pages/Home'
+import Home from './components/pages/Home'
 // Rotas privadas
 // import PrivateRoute from './components/PrivateRoute';
 /* contexts */
@@ -14,13 +14,14 @@ function App() {
   return (
     <Router>
       {/* <UserProvider> */}
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          {/* <Route path="/" element={<Welcome />} /> */}
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Home />} />
+        {/*<Route path="/register" element={<Register />} />*/}
+        {/* <Route path="/" element={<Welcome />} /> */}
 
-          {/* Rotas protegidas */}
-          {/* <Route path="/editUser" element={
+        {/* Rotas protegidas */}
+        {/* <Route path="/editUser" element={
             <PrivateRoute><EditUser /></PrivateRoute>
           } />
           <Route path="/diet" element={
@@ -32,14 +33,14 @@ function App() {
           <Route path="/gerenciador" element={
             <PrivateRoute><Gerenciador /></PrivateRoute>
           } /> */}
-          {/* <Route path="/home" element={
+        {/* <Route path="/home" element={
             <PrivateRoute><Home /></PrivateRoute>
           } /> */}
 
-        </Routes>
+      </Routes>
       {/* </UserProvider> */}
     </Router>
   )
 }
 
-export default App
+export default App;
