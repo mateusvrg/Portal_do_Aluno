@@ -3,9 +3,9 @@ import { House, BookOpenCheck, ChartLine, AlarmClock, Pin, UserRoundPlus, Users,
 
 const Sidebar = () => {
     return (
-        <div className='bg-white w-1/9 pt-2 shadow-lg'>
+        <div className='bg-white p-2 shadow-lg'>
             <ul className='p-2'>
-                <li className='flex text-1 p-2 cursor-pointer border-white border-b-2 text-slate-900 rounded-sm hover:bg-gray-100 hover:border-b-2 hover:border-slate-900 transition'><House className='w-6 h-6 mr-1' /> Home </li>
+                <li className='flex text-1 p-2 cursor-pointer border-white border-b-2 text-slate-900 rounded-sm hover:bg-gray-100 hover:border-b-2 hover:border-slate-900 transition'><House className='w-6 h-6 mr-1' /> <p className=''>Home</p> </li>
                 <li className='flex text-1 p-2 cursor-pointer border-white border-b-2 text-slate-900 rounded-sm hover:bg-gray-100 hover:border-b-2 hover:border-slate-900 transition'><BookOpenCheck className='w-6 h-6 mr-1' /> Notas </li>
                 <li className='flex text-1 p-2 cursor-pointer border-white border-b-2 text-slate-900 rounded-sm hover:bg-gray-100 hover:border-b-2 hover:border-slate-900 transition'><ChartLine className='w-6 h-6 mr-1' /> Frequências </li>
                 <li className='flex text-1 p-2 cursor-pointer border-white border-b-2 text-slate-900 rounded-sm hover:bg-gray-100 hover:border-b-2 hover:border-slate-900 transition'><AlarmClock className='w-6 h-6 mr-1' /> Horários </li>
