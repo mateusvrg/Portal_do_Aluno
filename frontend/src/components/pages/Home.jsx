@@ -6,8 +6,11 @@ const Home = () => {
     return (
         <>
             <Navbar />
-            <Sidebar />
-            <div className="min-h-screen">Home</div>
+
+            <div className="min-h-screen bg-amber-50/80 flex flex-row">
+                <Sidebar />
+                <p className='text-2xl text-slate-900 p-6'>Welcome to portal do aluno!</p>
+            </div>
         </>
     )
 }
