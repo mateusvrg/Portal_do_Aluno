@@ -12,13 +12,13 @@ const Login = () => {
                     <input
                         type="email"
                         placeholder="E-mail"
-                        className="text-left text-slate-900 bg-gray-500/15 bg-opacity-15 p-2 rounded-md w-full outline-slate-900 px-4 py-2"
+                        className="text-left text-slate-900 bg-gray-100 bg-opacity-15 p-2 rounded-md w-full outline-slate-900 px-4 py-2"
                     />
 
                     <input
                         type="password"
                         placeholder="Senha"
-                        className="text-left text-slate-900 bg-gray-500/15 p-2 rounded-md w-full outline-slate-900 px-4 py-2"
+                        className="text-left text-slate-900 bg-gray-100 p-2 rounded-md w-full outline-slate-900 px-4 py-2"
                     />
 
                     <button className="text-center bg-slate-900 text-white p-2 rounded-md w-full py-2 cursor-pointer">

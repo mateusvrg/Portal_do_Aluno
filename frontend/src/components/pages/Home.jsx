@@ -7,9 +7,9 @@ const Home = () => {
         <>
             <Navbar />
 
-            <div className="min-h-screen bg-amber-50/80 flex flex-row">
-                <Sidebar />
-                <p className='text-2xl text-slate-900 p-6'>Welcome to portal do aluno!</p>
+            <div className="min-h-screen bg-amber-50/80 flex flex-row mt-16">
+                <Sidebar className="fixed" />
+                <p className='text-2xl text-slate-900 p-6'>Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!Welcome to portal do aluno!</p>
             </div>
         </>
     )
